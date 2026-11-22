@@ -1,0 +1,242 @@
+[
+  {
+    "id": "S01",
+    "label": "scam",
+    "text": "Airdrop claim closes in 10 minutes. Connect and sign the claim transaction now at https://claim-reward.example",
+    "category": "fake_airdrop"
+  },
+  {
+    "id": "S02",
+    "label": "scam",
+    "text": "Official support here. Send your 12-word recovery phrase so we can unlock your wallet.",
+    "category": "support_impersonation"
+  },
+  {
+    "id": "S03",
+    "label": "scam",
+    "text": "Approve unlimited token spending to our staking contract. No need to check the contract address.",
+    "category": "approval_drainer"
+  },
+  {
+    "id": "S04",
+    "label": "scam",
+    "text": "We recovered your lost funds. Pay a refundable 0.2 ETH deposit first.",
+    "category": "recovery_scam"
+  },
+  {
+    "id": "S05",
+    "label": "scam",
+    "text": "Send 0.1 ETH to receive 1 ETH back. First 50 users only.",
+    "category": "fake_giveaway"
+  },
+  {
+    "id": "S06",
+    "label": "scam",
+    "text": "Your wallet is compromised. Click this link immediately and enter your seed phrase to freeze it.",
+    "category": "urgency_pressure"
+  },
+  {
+    "id": "S07",
+    "label": "scam",
+    "text": "Congratulations, you won a token prize. Connect your wallet and sign this unknown message to claim.",
+    "category": "fake_giveaway"
+  },
+  {
+    "id": "S08",
+    "label": "scam",
+    "text": "Your account will be deleted in 15 minutes. Pay the verification fee now to keep access.",
+    "category": "urgency_pressure"
+  },
+  {
+    "id": "S09",
+    "label": "scam",
+    "text": "I am a moderator. DM your private key and I can reverse the transfer.",
+    "category": "support_impersonation"
+  },
+  {
+    "id": "S10",
+    "label": "scam",
+    "text": "Mint this exclusive NFT before the timer ends. The website is a short link from an unsolicited message.",
+    "category": "fake_airdrop"
+  },
+  {
+    "id": "S11",
+    "label": "scam",
+    "text": "Support needs you to disable wallet security and install this remote access tool.",
+    "category": "support_impersonation"
+  },
+  {
+    "id": "S12",
+    "label": "scam",
+    "text": "Claim your refund by signing this transaction. The wallet preview says it grants unlimited token access.",
+    "category": "approval_drainer"
+  },
+  {
+    "id": "S13",
+    "label": "scam",
+    "text": "Send your recovery phrase to our verified agent to migrate your wallet safely.",
+    "category": "recovery_scam"
+  },
+  {
+    "id": "S14",
+    "label": "scam",
+    "text": "A celebrity is doubling crypto today. Send 0.2 BTC to the address and receive 0.4 BTC.",
+    "category": "fake_giveaway"
+  },
+  {
+    "id": "S15",
+    "label": "scam",
+    "text": "Urgent compliance update: pay a small tax fee to unlock your exchange balance.",
+    "category": "urgency_pressure"
+  },
+  {
+    "id": "S16",
+    "label": "scam",
+    "text": "This token claim requires connecting your wallet to an unfamiliar domain and approving a transaction.",
+    "category": "fake_airdrop"
+  },
+  {
+    "id": "S17",
+    "label": "scam",
+    "text": "We can restore your drained wallet. Pay upfront and share your seed phrase for verification.",
+    "category": "recovery_scam"
+  },
+  {
+    "id": "S18",
+    "label": "scam",
+    "text": "Your NFT is selected for a giveaway. Sign a blind message now; the offer expires shortly.",
+    "category": "fake_giveaway"
+  },
+  {
+    "id": "S19",
+    "label": "scam",
+    "text": "A fake support account says to transfer funds to a safe wallet they control during an investigation.",
+    "category": "support_impersonation"
+  },
+  {
+    "id": "S20",
+    "label": "scam",
+    "text": "Limited airdrop: paste this command into your terminal to claim tokens and approve a wallet popup.",
+    "category": "fake_airdrop"
+  },
+  {
+    "id": "B01",
+    "label": "benign",
+    "text": "Our community call is Thursday at 17:00 UTC. The agenda is on our public website; no wallet connection is needed.",
+    "category": "event_announcement"
+  },
+  {
+    "id": "B02",
+    "label": "benign",
+    "text": "Review your token allowances in wallet settings. Confirm the spender address from official documentation before signing.",
+    "category": "allowance_guidance"
+  },
+  {
+    "id": "B03",
+    "label": "benign",
+    "text": "The project posted a contract migration notice. Verify the announcement through the website you already use.",
+    "category": "migration_notice"
+  },
+  {
+    "id": "B04",
+    "label": "benign",
+    "text": "You can decline this wallet request. Read the transaction details and check the amount before approving.",
+    "category": "wallet_safety"
+  },
+  {
+    "id": "B05",
+    "label": "benign",
+    "text": "Our public forum is read-only today for scheduled maintenance. We will never request recovery phrases.",
+    "category": "maintenance_notice"
+  },
+  {
+    "id": "B06",
+    "label": "benign",
+    "text": "A new token proposal is open for discussion. Voting instructions are posted in the public governance forum.",
+    "category": "governance"
+  },
+  {
+    "id": "B07",
+    "label": "benign",
+    "text": "The wallet documentation explains how to revoke token approvals using the official settings page.",
+    "category": "allowance_guidance"
+  },
+  {
+    "id": "B08",
+    "label": "benign",
+    "text": "The conference registration page is available on the organization's usual website. Registration does not require a wallet.",
+    "category": "event_announcement"
+  },
+  {
+    "id": "B09",
+    "label": "benign",
+    "text": "A community member shared a contract address. Check it against two trusted sources before interacting.",
+    "category": "verification_guidance"
+  },
+  {
+    "id": "B10",
+    "label": "benign",
+    "text": "Security reminder: support will never ask you to disclose a seed phrase or private key.",
+    "category": "security_reminder"
+  },
+  {
+    "id": "B11",
+    "label": "benign",
+    "text": "The protocol published a postmortem and recommended users review any active allowances.",
+    "category": "postmortem_notice"
+  },
+  {
+    "id": "B12",
+    "label": "benign",
+    "text": "This wallet transaction transfers 0.01 ETH to the address shown. Confirm that you recognize the recipient.",
+    "category": "known_transaction"
+  },
+  {
+    "id": "B13",
+    "label": "benign",
+    "text": "The developer shared a testnet faucet link in the project's public documentation.",
+    "category": "testnet_resource"
+  },
+  {
+    "id": "B14",
+    "label": "benign",
+    "text": "A governance vote ends next week. Read the proposal and verify the voting interface from the official site.",
+    "category": "governance"
+  },
+  {
+    "id": "B15",
+    "label": "benign",
+    "text": "You can inspect the contract on a block explorer before deciding whether to interact with it.",
+    "category": "contract_review"
+  },
+  {
+    "id": "B16",
+    "label": "benign",
+    "text": "The app requests a limited allowance. Check the spender and revoke access later if it is no longer needed.",
+    "category": "allowance_guidance"
+  },
+  {
+    "id": "B17",
+    "label": "benign",
+    "text": "The conference organizers sent a schedule update. The event details are on their official website.",
+    "category": "event_announcement"
+  },
+  {
+    "id": "B18",
+    "label": "benign",
+    "text": "A wallet software release includes bug fixes. Download it from the publisher's known official site.",
+    "category": "software_release"
+  },
+  {
+    "id": "B19",
+    "label": "benign",
+    "text": "The community will discuss a proposal in a public chat. No payment or wallet signature is requested.",
+    "category": "governance"
+  },
+  {
+    "id": "B20",
+    "label": "benign",
+    "text": "A token transfer completed. Verify the transaction hash on a block explorer you trust.",
+    "category": "transaction_verification"
+  }
+]

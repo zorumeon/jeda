@@ -1,0 +1,6 @@
+{
+  "defaultMode": "PREFER_ON_DEVICE",
+  "maxOnDeviceChars": 1800,
+  "escalationEnabled": true,
+  "lowConfidenceThreshold": 2
+}

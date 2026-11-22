@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/checks/{checkId} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasAll(['risk', 'source', 'latencyMs', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['risk', 'source', 'latencyMs', 'createdAt', 'raw'])
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.risk in ['low', 'medium', 'high', 'critical']
+        && request.resource.data.source in ['on-device', 'cloud', 'unknown']
+        && request.resource.data.latencyMs is int
+        && request.resource.data.latencyMs >= 0
+        && (!('raw' in request.resource.data) || (request.resource.data.raw is string && request.resource.data.raw.size() <= 6000));
+      allow update: if false;
+    }
+  }
+}
