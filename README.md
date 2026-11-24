@@ -2,8 +2,6 @@
 
 **Pause before you connect.** Jeda is a privacy-first crypto-message triage prototype that helps people spot common scam signals without connecting a wallet. It uses Vite + TypeScript and Firebase AI Logic hybrid inference.
 
-**Live demo:** https://jeda-dev.web.app
-
 ## Value proposition
 
 - **For** everyday crypto and NFT users who receive airdrop claims, "official support" DMs, recovery offers, and wallet approval requests.
@@ -112,7 +110,7 @@ Low confidence is defined in `src/policy.ts`: invalid/missing schema, risk `medi
 
 No login, wallet, or real data is needed. Every example in the app is synthetic.
 
-1. **Open the hosted site:** <https://jeda-dev.web.app>. Use desktop Chrome.
+1. **Open the hosted site:** [TO ADD: hosted site URL]. Use desktop Chrome.
 2. **Use "Quick tour for judges"** above the checker. Its four buttons set up each step below; nothing is sent to a model until you click **Check this message**.
 3. **01 Scam verdict.** Loads the synthetic "Claim your airdrop" message. Click **Check this message**. The result panel shows a risk level, the signals found, one safe next step, and a badge that says where the model ran.
 4. **02 Secret guard.** Turns on **Privacy mode** (on-device only) and pastes this synthetic seed phrase: `apple river stone cloud maple tiger lemon ocean pencil garden window silver`. Jeda blocks the check before any model runs and shows a warning with a **Redact and continue** button. Click it to replace the phrase with `[RECOVERY PHRASE REDACTED]`.
@@ -162,16 +160,18 @@ On-device inference requires a supported desktop Chrome version, enabled Prompt 
 
 ## Assets
 
-- **No third-party image assets are used.** The app ships no photos, illustrations, or image files. The hero, the example message and assessment cards, the empty result state, and the onboarding header are built with HTML and CSS only.
+- **No third-party image assets are used.** The app ships no photos, illustrations, or image files. The hero, the example message and assessment cards, the empty result state, and the onboarding header are built with HTML, CSS and a small canvas animation.
 - Icons are inline SVG paths written in `src/main.ts`, and the favicon is an inline SVG data URI in `index.html`.
 - The UI uses no third-party logos, ads, or brand marks. Technology names such as Firebase AI Logic appear as plain text only.
-- The Geist and Doto fonts (SIL Open Font License) are self-hosted from the `@fontsource-variable/geist` and `@fontsource/doto` npm packages and bundled by Vite. The app makes no request to Google Fonts.
-- The interface style lives in `src/style.css` (layout and components) and `src/theme-glass.css` (the glass theme: translucent cards over slow-moving background light, dot-matrix numerals, and a dark mode that spreads from the theme button using the View Transitions API). Motion is disabled when the system asks for reduced motion.
+- The Geist, Geist Mono and Instrument Serif fonts (SIL Open Font License) are self-hosted from the `@fontsource-variable/geist`, `@fontsource-variable/geist-mono` and `@fontsource/instrument-serif` npm packages and bundled by Vite. The app makes no request to Google Fonts.
+- The interface style is layered in four files: `src/style.css` (layout and components), `src/theme-glass.css` (translucent cards over slow-moving background light, dot-matrix numerals, and a dark mode that spreads from the theme button using the View Transitions API), `src/theme-elegant.css` (serif headings and refined spacing), and `src/motion-dashboard.css` with `src/motion-dashboard.ts` (the animated hero dashboard, drawn with a canvas and DOM). Every number on that dashboard is synthetic and is labeled "Demo workspace, synthetic data" in the interface. Motion is disabled when the system asks for reduced motion.
 - `src/bip39-english.ts` contains the English BIP-39 wordlist from [bitcoin/bips](https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt) (MIT licensed). It is used only by the local secret guard.
 - `devpost-assets/` holds the Devpost cover image (`jeda-hero-1200x630.png`) and five screenshots captured from this app running in Chrome: desktop, mobile, dark mode, the secret guard blocking a synthetic seed phrase, and the hybrid console. They were taken in the demo workspace without Firebase keys, so none of them shows a model result; the console screenshot shows one secret-guard block and zero model runs. Add a capture from a configured project to show a real assessment.
 
 ## Project and submission materials
 
+- Source repository: <https://github.com/zorumeon/jeda>
+- [Submission checklist](SUBMISSION_CHECKLIST.md)
 - [Demo recording script](DEMO_SCRIPT.md)
 - [Devpost draft](DEVPOST.md)
 - [Manual Firebase setup](MANUAL_STEPS.md)

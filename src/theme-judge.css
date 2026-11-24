@@ -1,0 +1,69 @@
+/* Judge-readability layer. Loaded last: fixes the stretched input column, puts the verdict before the details
+   and gives every section a numbered, scannable heading. */
+
+/* Check layout: columns size to their own content instead of stretching the textarea */
+.check-grid { align-items: start; }
+.input-panel .textarea-wrap { flex: 0 0 auto; min-height: 0; }
+.input-panel textarea { flex: 0 0 auto; min-height: 168px; height: 168px; resize: vertical; }
+.input-panel .form-actions { margin-top: 1.25rem; padding-top: 0; }
+.check-side:has(> .empty-result) { align-self: stretch; }
+.check-side > .result-panel { flex: 0 0 auto; }
+@media (min-width: 961px) and (min-height: 820px) {
+  .input-panel { position: sticky; top: 88px; }
+}
+
+/* Input header with step label */
+.panel-heading { align-items: flex-start; }
+.panel-heading .eyebrow { margin-bottom: .35rem; }
+.examples { margin-top: 1.1rem; }
+.examples-label small { display: inline-flex; align-items: center; gap: .3rem; }
+.examples-label small .chip-dot { display: inline-block; margin-left: .35rem; }
+
+/* Settings grouped in one quiet block */
+.check-settings { margin: 1rem 0 0; padding: .9rem; border: 1px solid var(--border); border-radius: 16px; background: color-mix(in srgb, var(--surface-2) 55%, transparent); min-width: 0; }
+.check-settings legend { padding: 0 .4rem; font-family: var(--mono); font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.check-settings .options-row { margin-top: 0; }
+.check-settings .toggle-label { background: var(--surface); }
+.check-settings .route-note { margin-top: .75rem; background: transparent; padding: .25rem .25rem 0; }
+
+/* Primary action spans the column so it is impossible to miss */
+.input-panel .btn-primary { width: 100%; justify-content: center; padding-block: 1rem; font-size: 1rem; }
+.input-panel .button-caption { width: 100%; justify-content: center; }
+
+/* Result: verdict, then action, then evidence */
+.result-panel .result-summary { font-size: 1.02rem; line-height: 1.6; }
+.result-panel .recommendation { margin-top: 1.1rem; align-items: flex-start; }
+.result-panel .recommendation p { font-size: .98rem; line-height: 1.55; font-weight: 500; }
+.result-panel .flags-title { margin-top: 1.5rem; flex-wrap: wrap; }
+.result-panel .flags-title .count { font-weight: 500; }
+.flag-list { list-style: none; padding: 0; }
+.flag-item { align-items: flex-start; padding: .85rem .95rem; }
+.flag-item .flag-icon { flex: 0 0 auto; }
+.category-pill b { font-weight: 600; color: var(--r, var(--brand-blue)); margin-left: .2rem; }
+.flag-points { margin: .4rem 0 0; padding-left: 1rem; display: grid; gap: .35rem; }
+.flag-points li { font-size: .9rem; line-height: 1.5; color: var(--ink-2, var(--ink)); }
+.flag-points li::marker { color: var(--muted); }
+.result-panel .escalation { margin-top: 1.25rem; }
+.result-bottom { align-items: flex-start; padding-top: 1rem; border-top: 1px solid var(--border); }
+.run-meta { display: flex; flex-direction: column; gap: .35rem; min-width: 0; flex: 1 1 14rem; }
+.run-meta .run-badge { align-self: flex-start; }
+.run-meta .run-reason { margin: 0; }
+.result-bottom .btn-small { flex: 0 0 auto; }
+.result-panel .disclaimer { border-top: 0; padding-top: 0; }
+
+/* Judge tour: title on the left, page map on the right */
+.tour-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem 2rem; flex-wrap: wrap; }
+.tour-head .eyebrow { margin-bottom: .35rem; }
+.judge-path { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.judge-path > span { font-family: var(--mono); font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-right: .25rem; }
+.judge-path button { font: inherit; font-size: .8rem; font-weight: 500; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: .35rem .75rem; cursor: pointer; transition: border-color .15s, background .15s; }
+.judge-path button:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.judge-path button:focus-visible { outline: 3px solid var(--focus, var(--brand-blue)); outline-offset: 2px; }
+
+/* Numbered section headings read as a sequence */
+.section { scroll-margin-top: 80px; }
+
+@media (max-width: 600px) {
+  .check-settings { padding: .75rem; }
+  .judge-path > span { width: 100%; }
+}

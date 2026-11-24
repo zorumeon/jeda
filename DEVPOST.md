@@ -44,8 +44,7 @@ All work in this repository was done during the submission period, starting 11 N
 - Firebase integration: AI Logic hybrid inference with structured output, App Check, Remote Config, Anonymous Auth, Firestore history, and security rules.
 - The local secret guard and routing policy, with unit tests (`src/secret-guard.test.ts`, `src/policy.test.ts`).
 - The 40-case synthetic evaluation set, the in-browser evaluation harness, and the `record-evaluation.mjs` script.
-- Documentation, the threat model, the judge testing guide, and the CSS-only hero and result-card design (no third-party image assets).
-
+- Documentation, the threat model, the judge testing guide, and the hero, animated synthetic demo dashboard, and result-card design built with HTML, CSS and canvas (no third-party image assets).
 
 ## Privacy and responsible use
 The app does not connect to wallets, sign transactions, open submitted URLs, or execute pasted text. Standard `PREFER_ON_DEVICE` routing can fall back to the cloud under Firebase SDK policy, and the interface discloses that. Privacy mode uses `ONLY_ON_DEVICE`, and an unavailable local model does not trigger an automatic cloud request. Long-input and low-confidence cloud review paths are clearly disclosed and require the user's Check action or a separate confirmation. The result is heuristic guidance, not a guarantee, audit, or financial recommendation.
@@ -59,7 +58,7 @@ Record and publish a real evaluation run, expand the reviewed synthetic corpus, 
 ## Testing instructions for judges
 No login, wallet, or real data is needed. Every example in the app is synthetic.
 
-1. **Open the hosted site:** https://jeda-dev.web.app. Use desktop Chrome.
+1. **Open the hosted site:** [TO ADD: hosted site URL]. Use desktop Chrome.
 2. **Use "Quick tour for judges"** above the checker. Its four buttons set up each step below; nothing is sent to a model until you click **Check this message**.
 3. **01 Scam verdict.** Loads the synthetic "Claim your airdrop" message. Click **Check this message**. The result shows a risk level, the signals found, one safe next step, and where the model ran.
 4. **02 Secret guard.** Turns on **Privacy mode** (on-device only) and pastes this synthetic seed phrase: `apple river stone cloud maple tiger lemon ocean pencil garden window silver`. Jeda blocks the check before any model runs and shows a warning with a **Redact and continue** button.
@@ -75,5 +74,5 @@ Use the files in `devpost-assets/`: the cover `jeda-hero-1200x630.png`, then scr
 ## Links
 - Demo video (public on YouTube): [TO ADD]
 - Source repository: https://github.com/zorumeon/jeda
-- Live site: https://jeda-dev.web.app
+- Live site: [TO ADD]
 - Evaluation: the repository includes the 40-case synthetic set and the in-browser harness. No measured report is published with this submission, and no accuracy figure is claimed.

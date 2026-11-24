@@ -42,7 +42,17 @@
 
 .m-b { grid-column: span 5; }
 .m-d { grid-column: span 7; }
-.m-f, .m-g { grid-column: span 6; }
+.m-f { grid-column: span 7; }
+.m-g { grid-column: span 5; }
+.mdash-grid > .mcard { height: 100%; }
+.m-foot { margin-top: auto; padding: 0 .6rem; }
+
+.m-verdict-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.m-risk { display: inline-flex; align-items: center; gap: .5rem; padding: .4rem .8rem; border-radius: 999px; font-size: .92rem; font-weight: 600; color: var(--brand-orange); background: color-mix(in srgb, var(--brand-orange) 12%, transparent); }
+.m-risk-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.m-source { padding: 0; border: 0; background: none; font-family: var(--m-mono); font-size: .74rem; color: var(--muted); }
+.m-next { margin: auto 0 0; display: flex; flex-direction: column; gap: .35rem; padding: .9rem 1rem; border-radius: 14px; font-size: .92rem; line-height: 1.5; color: var(--ink); background: color-mix(in srgb, var(--brand-blue) 7%, transparent); border: 1px solid color-mix(in srgb, var(--brand-blue) 16%, transparent); }
+.m-next span { font-family: var(--m-mono); font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 
 
 .m-sender { display: flex; align-items: center; gap: 1rem; }
@@ -82,7 +92,6 @@
 .m-signals li.is-active .m-val { color: var(--brand-blue); }
 [data-theme="dark"] .m-signals li.is-active .m-val { color: #8fadff; }
 .dot-bar { display: block; height: 8px; width: 0; color: var(--brand-blue); background-image: radial-gradient(circle, currentColor 2.1px, transparent 2.6px); background-size: 8px 8px; background-repeat: repeat-x; background-position: 0 50%; transition: width 1.2s cubic-bezier(.2, .75, .2, 1) var(--d, 0ms); }
-.m-routes .dot-bar { color: var(--brand-orange); opacity: .85; }
 .mdash.is-ready .dot-bar { width: max(40px, calc(var(--w) * 1%)); }
 
 @keyframes m-ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-orange) 55%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }

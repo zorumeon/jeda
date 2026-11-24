@@ -12,6 +12,8 @@ import './theme-glass.css'
 import './theme-elegant.css'
 import './motion-dashboard.css'
 import './theme-devpost.css'
+import './theme-judge.css'
+import './theme-check.css'
 
 type Result = { verdict: Verdict; source: string; latencyMs: number; reason: string }
 type EvaluationOutput = { id: string; category: string; mode: 'PREFER_ON_DEVICE' | 'ONLY_IN_CLOUD'; stage: 'preferred' | 'cloud-only' | 'second-opinion'; path: string; expected: 'scam' | 'benign'; actual?: 'scam' | 'benign'; latencyMs?: number; uncertainty?: number; lowConfidence?: boolean; error?: string }
@@ -48,6 +50,9 @@ function syncGuard() {
   guardActive = blocked
 }
 let animateResult = false
+let checkingMode = ''
+let checkingStartedAt = 0
+let checkingTimer = 0
 
 function esc(value: unknown) { return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!) }
 function riskName(risk: Risk) { return risk[0].toUpperCase() + risk.slice(1) }
@@ -170,12 +175,7 @@ function renderHero() {
     <div class="hero-actions">${arrowCta('Check a message', 'data-jump="check"')}<button class="btn-blue" data-jump="how">See how it works</button></div>
     <ul class="mode-chips" aria-label="Firebase AI Logic inference modes used by Jeda"><li>${icon('cpu')}<code>PREFER_ON_DEVICE</code>default</li><li>${icon('lock')}<code>ONLY_ON_DEVICE</code>Privacy mode</li><li>${icon('cloud')}<code>ONLY_IN_CLOUD</code>long input or consent</li></ul>
     <div class="motion-slot" id="motion-slot"></div>
-  </div>
-  <div class="hero-strip"><div class="container strip-inner"><span>Submission at a glance</span><strong>Web (Chrome)</strong><strong>Gemini Nano on-device</strong><strong>Cloud fallback</strong><strong>5 Firebase products</strong><strong>Apache-2.0</strong></div></div></section>`
-}
-function renderStats() {
-  const stats = [['0', 'wallet connections, ever'], ['6', 'scam categories explained'], [currentPolicy.maxOnDeviceChars.toLocaleString(), 'max characters for on-device checks'], ['40', 'synthetic evaluation cases']]
-  return `<section class="stats"><div class="container stats-grid">${stats.map(([v, l]) => `<div class="stat"><strong>${v}</strong><span>${l}</span></div>`).join('')}</div></section>`
+  </div></section>`
 }
 function renderImpact() {
   const audiences = [
@@ -185,7 +185,7 @@ function renderImpact() {
   ]
   return `<section class="section impact" id="impact"><div class="container impact-grid">
     <div class="impact-figure">
-      <span class="eyebrow">THE PROBLEM</span>
+      <span class="eyebrow">02 · THE PROBLEM</span>
       <strong class="impact-number">$9.3B</strong>
       <p class="impact-caption">lost to crypto-related fraud reported to the FBI in 2024, up 66% on the year before.</p>
       <dl class="impact-facts"><div><dt>149,686</dt><dd>complaints filed</dd></div><div><dt>$2.8B</dt><dd>lost by people over 60</dd></div></dl>
@@ -207,22 +207,17 @@ function renderStack() {
     ['book', 'Firestore', 'Per-user history', 'Stores risk level, source and latency by default. Message text is saved only after an explicit opt-in.'],
   ] as const
   return `<section class="section" id="stack"><div class="container">
-    <div class="section-head center"><span class="eyebrow">BUILT ON FIREBASE</span><h2>Five Firebase products, one hybrid pipeline</h2><p class="lead">Every product below is imported and called at runtime in <code>src/firebase.ts</code>, not just listed in the README.</p></div>
+    <div class="section-head center"><span class="eyebrow">05 · BUILT ON FIREBASE</span><h2>Five Firebase products, one hybrid pipeline</h2><p class="lead">Every product below is imported and called at runtime in <code>src/firebase.ts</code>, not just listed in the README.</p></div>
     <div class="stack-grid">${stack.map(([ic, name, tag, text], i) => `<article class="stack-card${i === 0 ? ' featured' : ''}"><div class="stack-top"><span class="type-icon">${icon(ic)}</span><span class="stack-tag">${tag}</span></div><h3>${name}</h3><p>${text}</p></article>`).join('')}</div>
   </div></section>`
 }
 function renderSections() {
   return `${renderImpact()}<section class="section alt" id="types"><div class="container">
-      <div class="section-head center"><span class="eyebrow">WHAT JEDA LOOKS FOR</span><h2>Six patterns behind most crypto scams</h2><p class="lead">Every flag in your assessment maps to one of these categories, with a plain-language explanation.</p></div>
+      <div class="section-head center"><span class="eyebrow">03 · WHAT JEDA LOOKS FOR</span><h2>Six patterns behind most crypto scams</h2><p class="lead">Every flag in your assessment maps to one of these categories, with a plain-language explanation.</p></div>
       <div class="types-grid">${scamTypes.map(t => `<article class="type-card"><span class="type-icon">${icon(t.icon)}</span><h3>${t.name}</h3><p>${t.desc}</p><span class="type-signal">${t.signal}</span></article>`).join('')}</div>
     </div></section>
     <section class="section" id="how"><div class="container">
-      <div class="section-head center"><span class="eyebrow">HOW IT WORKS</span><h2>Three steps, zero wallet connections</h2></div>
-      <ol class="steps">
-        <li><span class="step-no">01</span><span class="step-icon">${icon('scan')}</span><h3>Paste, never connect</h3><p>Jeda only reads text. It never asks for your wallet and never signs anything.</p></li>
-        <li><span class="step-no">02</span><span class="step-icon">${icon('cpu')}</span><h3>Your device reads it first</h3><p>The on-device model analyses the message when your browser supports it. If it can&apos;t, standard mode falls back to the cloud and the result says where it ran. Privacy mode never uses the cloud without your confirmation.</p></li>
-        <li><span class="step-no">03</span><span class="step-icon">${icon('shield')}</span><h3>You get a plain answer</h3><p>A risk level, the signals found and one safe next step. Then you decide.</p></li>
-      </ol>
+      <div class="section-head center"><span class="eyebrow">04 · HOW IT WORKS</span><h2>Paste text. Never connect a wallet.</h2><p class="lead">Every message goes through the same four stops. The result always tells you where it actually ran.</p></div>
       <div class="flow" aria-label="Request routing">
         <div class="flow-node"><span>${icon('scan')}</span><strong>Paste message</strong><small>Text only</small></div><span class="flow-line" aria-hidden="true"></span>
         <div class="flow-node accent"><span>${icon('lock')}</span><strong>Secret guard</strong><small>Blocks keys &amp; phrases locally</small></div><span class="flow-line" aria-hidden="true"></span>
@@ -233,43 +228,43 @@ function renderSections() {
     </div></section>
     ${renderStack()}
     <section class="section alt" id="trust"><div class="container">
-      <div class="section-head center"><span class="eyebrow">IS IT SAFE?</span><h2>Built to keep your secrets yours</h2></div>
+      <div class="section-head center"><span class="eyebrow">06 · IS IT SAFE?</span><h2>Built to keep your secrets yours</h2></div>
       <div class="trust-grid">
         <article class="trust-card"><span class="type-icon">${icon('lock')}</span><h3>Secrets are blocked first</h3><p>Recovery phrases and private keys are caught before any model runs, then redacted on request. Nothing is sent or stored.</p></article>
         <article class="trust-card"><span class="type-icon">${icon('shield')}</span><h3>Your text stays yours</h3><p>History saves only the risk level by default. Your message is stored only if you switch that on.</p></article>
         <article class="trust-card"><span class="type-icon">${icon('alert')}</span><h3>Honest about limits</h3><p>This is heuristic guidance. Jeda cannot verify contracts, links or addresses, so check through official channels.</p></article>
       </div>
-      <div class="rules"><div><span class="eyebrow light">GOOD HABITS</span><h3>Three habits that protect you</h3></div><ol><li><span>1</span><p><strong>Never share your recovery phrase.</strong> No legitimate team will ask for it.</p></li><li><span>2</span><p><strong>Review every wallet approval.</strong> Check the spender and allowance first.</p></li><li><span>3</span><p><strong>Verify through official channels.</strong> Use a URL you already trust.</p></li></ol></div>
-    </div></section>
-    <section class="cta-band"><div class="hero-grid-bg" aria-hidden="true"></div><div class="container cta-inner"><div><h2>Got a message you&apos;re unsure about?</h2><p>Paste it in. Jeda takes a look before you click anything.</p></div>${arrowCta('Check a message', 'data-jump="check"')}</div></section>`
+    </div></section>`
 }
 function renderScan() {
   const flagged = findSecrets(input)
   const selectedExample = examples.findIndex(example => example.text === input)
   const route = getEffectiveRoute(input.length, privacyOnly)
   const showEscalation = result && isLowConfidence(result.verdict, currentPolicy.lowConfidenceThreshold) && result.source === 'on-device' && currentPolicy.escalationEnabled && appCheckReady
-  return `${renderHero()}${renderStats()}<section class="section" id="check"><div class="container">
-    <div class="section-head"><span class="eyebrow">STEP 01 · ANALYZE</span><h2>Check a message</h2><p class="lead">Paste it below. It is checked on your device when Chrome&apos;s local model is available. Privacy mode never uses the cloud without your confirmation.</p></div>
+  return `${renderHero()}<section class="section" id="check"><div class="container">
+    <div class="check-head">
+      <div class="check-head-copy"><span class="eyebrow">01 · LIVE DEMO</span><h2>Check a message</h2><p>Paste a message. Jeda checks it on your device first, and never uses the cloud without your OK.</p></div>
+      ${!configured ? `<button class="setup-pill" data-page="diagnostics" title="Complete the Firebase web-app configuration and App Check to enable inference and private history.">${icon('alert')}<span>Firebase not configured</span><b>Setup guide ${icon('arrow')}</b></button>` : ''}
+    </div>
     ${renderTour()}
-    ${!configured ? `<div class="notice notice-info"><span class="notice-icon">${icon('alert')}</span><div><strong>Firebase setup incomplete</strong><p>Complete the web-app configuration and App Check to enable cloud inference and private history. Local inference also needs Firebase configuration and a supported browser.</p></div><button class="text-link" data-page="diagnostics">Setup guide</button></div>` : ''}
     <div class="check-grid">
       <section class="panel input-panel" aria-labelledby="input-title">
-        <div class="panel-heading"><h3 id="input-title">Paste a message or request</h3><span class="local-tag">${icon('shield')} Checked locally first</span></div>
-        <div class="examples"><span class="examples-label">Try an example <small>· all synthetic</small></span><div class="chip-row">${examples.map((x, i) => `<button class="chip ${selectedExample === i ? 'active' : ''}" data-example="${i}" aria-pressed="${selectedExample === i}"><span class="chip-dot ${x.kind}"></span>${x.label}</button>`).join('')}</div></div>
+        <div class="panel-heading"><div><span class="eyebrow">STEP 1 · INPUT</span><h3 id="input-title">Paste a message or request</h3></div><span class="local-tag">${icon('shield')} Checked locally first</span></div>
+        <div class="examples"><span class="examples-label">Try an example <small>· all synthetic · <i class="chip-dot scam"></i> scam <i class="chip-dot benign"></i> benign</small></span><div class="chip-row">${examples.map((x, i) => `<button class="chip ${selectedExample === i ? 'active' : ''}" data-example="${i}" aria-pressed="${selectedExample === i}"><span class="chip-dot ${x.kind}"></span>${x.label}</button>`).join('')}</div></div>
         <label class="sr-only" for="message-input">Suspicious message or wallet request</label>
         <div class="textarea-wrap"><textarea id="message-input" maxlength="6000" placeholder="Paste the message, link context, or wallet request you want to check…">${esc(input)}</textarea><div class="input-meta"><span id="char-count">${input.length} / 6000</span><span>Min. 10 characters · Press / to focus</span></div></div>
         ${flagged.length ? `<div class="secret-warning" role="alert"><span class="warning-mark">${icon('lock')}</span><div><strong>Possible ${[...new Set(flagged.map(x => x.kind))].join(' and ')} detected</strong><p>We blocked analysis. Nothing was sent to any model or stored. Choose Redact and continue to remove the sensitive text.${flagged.some(x => x.kind === 'private key') ? ' A 64-character hex value can also be a transaction hash; it looks identical to a private key, so both are blocked. Describe the transaction in words instead.' : ''}</p><button class="btn-small" id="redact-input">Redact and continue</button></div></div>` : ''}
-        <div class="options-row">
+        <fieldset class="check-settings"><legend>Check settings</legend><div class="options-row">
           <label class="toggle-label"><input id="privacy-toggle" type="checkbox" ${privacyOnly ? 'checked' : ''}><span class="switch"></span><span><strong>Privacy mode</strong><small>On-device only</small></span></label>
-          <label class="toggle-label"><input id="save-raw" type="checkbox" ${saveRaw ? 'checked' : ''}><span class="switch"></span><span><strong>Save message in history</strong><small>Off by default</small></span></label>
+          <label class="toggle-label"><input id="save-raw" type="checkbox" ${saveRaw ? 'checked' : ''}><span class="switch"></span><span><strong>Save text to history</strong><small>Off by default</small></span></label>
         </div>
-        <div class="route-note"><span class="route-badge ${route.mode === 'ONLY_IN_CLOUD' ? 'cloud' : 'device'}">${icon(route.mode === 'ONLY_IN_CLOUD' ? 'cloud' : 'cpu')}${route.mode.replaceAll('_', ' ').toLowerCase()}</span><p>${privacyOnly ? 'Privacy mode blocks cloud use. If no local model is available, you can choose whether to send this text to the cloud.' : `${esc(route.reason)}. ${route.mode === 'ONLY_IN_CLOUD' ? 'Cloud-only inference starts only after you click Check.' : route.mode === 'PREFER_IN_CLOUD' ? 'The SDK prefers cloud inference for this request.' : ''}`}</p></div>
+        <div class="route-note"><span class="route-badge ${route.mode === 'ONLY_IN_CLOUD' ? 'cloud' : 'device'}">${icon(route.mode === 'ONLY_IN_CLOUD' ? 'cloud' : 'cpu')}${route.mode.replaceAll('_', ' ').toLowerCase()}</span><p>${privacyOnly ? 'Privacy mode blocks cloud use. If no local model is available, you can choose whether to send this text to the cloud.' : `${esc(route.reason)}. ${route.mode === 'ONLY_IN_CLOUD' ? 'Cloud-only inference starts only after you click Check.' : route.mode === 'PREFER_IN_CLOUD' ? 'The SDK prefers cloud inference for this request.' : ''}`}</p></div></fieldset>
         <div class="form-actions"><button class="btn-primary" id="analyze" aria-busy="${busy}" ${busy || input.trim().length < 10 || flagged.length ? 'disabled' : ''}>${busy ? '<span class="spinner" aria-hidden="true"></span> Checking…' : `${icon('scan')} Check this message`}</button><span class="button-caption">${icon('check')} No wallet connection · No transaction signing</span></div>
         <div id="inference-status" class="inference-status" aria-live="polite">${busy ? esc(lifecycle) : ''}</div>
         ${errorMessage ? `<div class="error-box" role="alert"><span class="notice-icon">${icon('alert')}</span><div><p>${esc(errorMessage)}</p>${cloudFallbackAvailable ? '<button id="cloud-fallback" class="btn-small">Ask before sending to cloud</button>' : ''}</div></div>` : ''}
       </section>
       <aside class="check-side" aria-label="Assessment">
-        ${result ? renderResult(result, Boolean(showEscalation)) : `<section class="empty-result"><span class="empty-icon">${icon('shield')}</span><strong>Your assessment will appear here</strong><p>Start with a message on the left. Your input is checked for sensitive secrets before any model runs.</p><ul class="empty-list"><li>${icon('check')} Risk level from low to critical</li><li>${icon('check')} Each red flag explained</li><li>${icon('check')} One safe next step</li></ul></section>`}
+        ${busy ? renderChecking() : result ? renderResult(result, Boolean(showEscalation)) : `<section class="empty-result"><span class="empty-icon">${icon('shield')}</span><strong>Your assessment will appear here</strong><p>Start with a message on the left. Your input is checked for sensitive secrets before any model runs.</p><ul class="empty-list"><li>${icon('check')} Risk level from low to critical</li><li>${icon('check')} Each red flag explained</li><li>${icon('check')} One safe next step</li></ul></section>`}
       </aside>
     </div>
     ${renderConsole()}
@@ -283,10 +278,42 @@ const tourSteps: { id: TourStep; title: string; text: string }[] = [
   { id: 'eval', title: 'Evaluation', text: 'Opens the 40-case synthetic benchmark. It stays empty until a real run is recorded.' },
 ]
 function renderTour() {
-  return `<section class="tour" id="tour" aria-labelledby="tour-title">
-    <div class="tour-head"><h3 id="tour-title">Quick tour for judges</h3><p>Four steps, synthetic data only. Nothing is sent until you press Check.</p></div>
-    <div class="tour-grid">${tourSteps.map((step, i) => `<button class="tour-step ${tourStep === step.id ? 'active' : ''}" data-tour="${step.id}" aria-pressed="${tourStep === step.id}"><span class="tour-no" aria-hidden="true">0${i + 1}</span><strong>${step.title}</strong><small>${step.text}</small></button>`).join('')}</div>
+  const active = tourSteps.find(step => step.id === tourStep)
+  return `<section class="tour-bar" id="tour" aria-labelledby="tour-title">
+    <span class="tour-label" id="tour-title">${icon('play')} Judge tour</span>
+    <div class="tour-chips">${tourSteps.map((step, i) => `<button class="tour-chip ${tourStep === step.id ? 'active' : ''}" data-tour="${step.id}" aria-pressed="${tourStep === step.id}" title="${step.text}"><span aria-hidden="true">${i + 1}</span>${step.title}</button>`).join('')}</div>
+    <p class="tour-hint" aria-live="polite">${active ? active.text : 'Synthetic data only. Nothing is sent until you press Check.'}</p>
   </section>`
+}
+function renderChecking() {
+  const cloud = checkingMode === 'ONLY_IN_CLOUD'
+  const where = cloud ? `Cloud · ${CLOUD_MODEL}` : checkingMode === 'ONLY_ON_DEVICE' ? 'On-device only · Gemini Nano' : 'On-device first · Gemini Nano'
+  const preview = esc(input.trim().slice(0, 220)) + (input.trim().length > 220 ? '…' : '')
+  const steps = [
+    { state: 'done', title: 'Secret guard', detail: 'No seed phrase or private key found' },
+    { state: 'done', title: 'Route chosen', detail: where },
+    { state: 'active', title: 'Model reading the message', detail: `<span id="checking-lifecycle">${esc(lifecycle)}</span>` },
+    { state: 'todo', title: 'Writing the assessment', detail: 'Risk level, red flags, one safe next step' },
+  ]
+  return `<section class="checking" aria-labelledby="checking-title" aria-busy="true">
+    <div class="checking-top">
+      <span class="checking-orb" aria-hidden="true">${icon(cloud ? 'cloud' : 'cpu')}</span>
+      <div><span class="eyebrow">STEP 2 · CHECKING</span><h3 id="checking-title">Reading your message</h3></div>
+      <span class="checking-time" id="checking-elapsed" aria-label="Elapsed time">0.0 s</span>
+    </div>
+    <div class="checking-scan" aria-hidden="true"><p>${preview}</p><span class="scan-beam"></span></div>
+    <ol class="checking-steps">${steps.map(s => `<li class="${s.state}"><span class="step-dot">${s.state === 'done' ? icon('check') : ''}</span><div><strong>${s.title}</strong><small>${s.detail}</small></div></li>`).join('')}</ol>
+    <p class="checking-hint" id="checking-hint" hidden>${icon('clock')} ${cloud ? 'Cloud checks usually finish in a few seconds.' : 'The first on-device check can take up to a minute while Gemini Nano warms up. Nothing leaves this device.'}</p>
+  </section>`
+}
+function startCheckingTimer() {
+  window.clearInterval(checkingTimer)
+  checkingTimer = window.setInterval(() => {
+    const seconds = (performance.now() - checkingStartedAt) / 1000
+    const el = document.querySelector('#checking-elapsed')
+    if (el) el.textContent = `${seconds.toFixed(1)} s`
+    if (seconds > 6) document.querySelector<HTMLElement>('#checking-hint')?.removeAttribute('hidden')
+  }, 100)
 }
 function renderConsole() {
   const lanes: { id: RunPath; icon: string; name: string; detail: string }[] = [
@@ -303,16 +330,22 @@ function renderConsole() {
 function renderResult(item: Result, showEscalation = false) {
   const level = riskOrder.indexOf(item.verdict.risk)
   const escalation = showEscalation ? `<div class="escalation"><div><strong>Want a second opinion?</strong><p>This result has limited evidence. A cloud model can review the same message. The text leaves this device only if you approve.</p></div><button class="btn-small" id="escalate">Get a second opinion ${icon('arrow')}</button></div>` : ''
+  const groups = new Map<string, string[]>()
+  for (const f of item.verdict.flags) groups.set(f.category, [...(groups.get(f.category) ?? []), f.explanation])
+  const flagCount = item.verdict.flags.length
+  const flagsHeading = flagCount ? `Why Jeda flagged it <span class="count">${flagCount} signal${flagCount === 1 ? '' : 's'} · ${groups.size} ${groups.size === 1 ? 'category' : 'categories'}</span>` : 'No specific red flags found'
+  const flagList = [...groups].map(([category, explanations]) => `<li class="flag-item"><span class="flag-icon">${icon(scamTypes.find(t => t.id === category)?.icon ?? 'alert')}</span><div><span class="category-pill">${categoryNames[category] ?? 'Other signal'}${explanations.length > 1 ? ` <b>×${explanations.length}</b>` : ''}</span>${explanations.length > 1 ? `<ul class="flag-points">${explanations.map(e => `<li>${esc(e)}</li>`).join('')}</ul>` : `<p>${esc(explanations[0])}</p>`}</div></li>`).join('')
+  const where = item.source === 'on-device' ? 'on-device' : item.source === 'cloud' ? 'in cloud' : 'with unknown source'
+  const seconds = item.latencyMs >= 1000 ? `${(item.latencyMs / 1000).toFixed(1)} s` : `${item.latencyMs} ms`
   return `<section class="result-panel risk-${item.verdict.risk}${animateResult ? ' enter' : ''}" aria-live="polite">
-    <div class="result-top"><div><span class="eyebrow">ASSESSMENT</span><h3>Safety assessment</h3></div><div class="risk-chip risk-${item.verdict.risk}"><span class="risk-dot"></span>${riskName(item.verdict.risk)} risk</div></div>
+    <div class="result-top"><div><span class="eyebrow">STEP 2 · RESULT</span><h3>Safety assessment</h3></div><div class="risk-chip risk-${item.verdict.risk}"><span class="risk-dot"></span>${riskName(item.verdict.risk)} risk</div></div>
     <div class="risk-meter" role="meter" aria-label="Risk level: ${item.verdict.risk}" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${level + 1}"><div class="meter-bars" style="--filled:${level + 1}">${riskOrder.map((r, i) => `<span class="${level >= i ? 'filled' : ''}" style="--i:${i}"><small>${riskName(r)}</small></span>`).join('')}</div></div>
     <p class="result-summary">${esc(item.verdict.summary)}</p>
-    <div class="flags-title">${item.verdict.flags.length ? `Signals to review <span class="count">${item.verdict.flags.length}</span>` : 'No specific red flags found'}</div>
-    <div class="flag-list">${item.verdict.flags.map(f => `<div class="flag-item"><span class="flag-icon">${icon(scamTypes.find(t => t.id === f.category)?.icon ?? 'alert')}</span><div><span class="category-pill">${categoryNames[f.category] ?? 'Other signal'}</span><p>${esc(f.explanation)}</p></div></div>`).join('') || '<p class="no-flags">This does not guarantee a message is safe. Verify independently.</p>'}</div>
-    <div class="recommendation"><span class="recommend-icon">${icon('shield')}</span><div><span>RECOMMENDED NEXT STEP</span><p>${esc(item.verdict.recommendation)}</p></div></div>
-    <div class="result-bottom"><span class="run-badge ${item.source}">${icon(item.source === 'cloud' ? 'cloud' : 'cpu')}Ran ${item.source === 'on-device' ? 'on-device' : item.source === 'cloud' ? 'in cloud' : 'with unknown source'} · ${item.latencyMs} ms</span><button class="btn-small ghost" id="copy-summary">${icon('copy')} Copy safe summary</button></div>
-    <p class="run-reason">${esc(item.reason)}</p>
+    <div class="recommendation"><span class="recommend-icon">${icon('shield')}</span><div><span>WHAT TO DO NEXT</span><p>${esc(item.verdict.recommendation)}</p></div></div>
+    <div class="flags-title">${flagsHeading}</div>
+    ${flagCount ? `<ul class="flag-list">${flagList}</ul>` : '<p class="no-flags">This does not guarantee a message is safe. Verify independently.</p>'}
     ${escalation}
+    <div class="result-bottom"><div class="run-meta"><span class="run-badge ${item.source}">${icon(item.source === 'cloud' ? 'cloud' : 'cpu')}Ran ${where} · ${seconds}</span><span class="run-reason">${esc(item.reason)}</span></div><button class="btn-small ghost" id="copy-summary">${icon('copy')} Copy safe summary</button></div>
     <p class="disclaimer">Heuristic guidance, not a guarantee. Jeda cannot verify contract code or guarantee safety.</p></section>`
 }
 function resultCard(item: Result) {
@@ -427,12 +460,14 @@ async function runAnalysis(forcedMode?: 'ONLY_IN_CLOUD', overrideReason?: string
   const reason=overrideReason??(mode==='ONLY_IN_CLOUD'?selected.reason:mode==='ONLY_ON_DEVICE'?selected.reason:'Device preferred by Firebase hybrid inference')
   if(mode!=='ONLY_ON_DEVICE'&&!appCheckReady){cloudFallbackAvailable=false;errorMessage='Cloud-capable inference is disabled until Firebase App Check is configured.';render();return}
   cloudFallbackAvailable=false
-  busy=true;errorMessage='';lifecycle=mode==='ONLY_IN_CLOUD'?'Preparing cloud model':'Preparing on-device model';render()
+  busy=true;errorMessage='';checkingMode=mode;checkingStartedAt=performance.now();lifecycle=mode==='ONLY_IN_CLOUD'?'Preparing cloud model':'Preparing on-device model';render();startCheckingTimer()
   try {
     const analyzed=await analyze(input,mode,(progress)=>{
       lifecycle=`Downloading on-device model ${Math.round(progress*100)}%`
       const status=document.querySelector('#inference-status')
       if(status)status.textContent=lifecycle
+      const checking=document.querySelector('#checking-lifecycle')
+      if(checking)checking.textContent=lifecycle
       const diagnostics=document.querySelector('#model-status')
       if(diagnostics)diagnostics.textContent=lifecycle
     })
@@ -449,7 +484,7 @@ async function runAnalysis(forcedMode?: 'ONLY_IN_CLOUD', overrideReason?: string
     const failedSource=(error as Error&{inferenceSource?:string}).inferenceSource
     cloudFallbackAvailable=!forcedMode&&currentPolicy.escalationEnabled&&appCheckReady&&(mode==='ONLY_ON_DEVICE'||(mode==='PREFER_ON_DEVICE'&&failedSource==='on-device'))
     errorMessage=cloudFallbackAvailable?(mode==='ONLY_ON_DEVICE'?'The local model is unavailable. Your message was not sent. You can explicitly approve one cloud fallback below.':'The on-device response could not be validated. Your message was not sent to cloud. You can explicitly approve one cloud second opinion below.'):message
-  } finally {busy=false;render();animateResult=false}
+  } finally {window.clearInterval(checkingTimer);busy=false;render();animateResult=false}
 }
 async function refreshHistory(){try{historyItems=await loadHistory()}catch{errorMessage='History could not be loaded. Configure Firebase Auth and Firestore rules.'}}
 async function doClearHistory(){if(!confirm('Clear all saved check history for this anonymous account?'))return;try{await clearHistory();historyItems=[];render()}catch{errorMessage='History could not be cleared.';render()}}

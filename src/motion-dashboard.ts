@@ -22,12 +22,6 @@ const SIGNALS = [
   { label: 'Fake airdrop', value: 90, level: 'Flagged' },
   { label: 'Approval drainer', value: 90, level: 'Flagged' },
 ]
-const ROUTES = [
-  { label: 'On your device', value: 78 },
-  { label: 'Cloud, with your approval', value: 14 },
-  { label: 'Blocked by secret guard', value: 5 },
-  { label: 'Redacted, then checked', value: 3 },
-]
 const STEPS = ['Secret check', 'Read the signals', 'Explain each flag', 'Offer a safer step']
 const STEP_STATE = { done: 'Passed', active: 'Running', next: 'Next' }
 
@@ -133,10 +127,12 @@ function template() {
       <article class="mcard m-f">
         <h3>Signals found</h3>
         <ol class="m-list m-signals">${SIGNALS.map((s, i) => listRow(i, s.label, s.value, s.level, i * 90)).join('')}</ol>
+        <p class="m-caption m-foot">Each flag comes with a plain-language explanation of the trick.</p>
       </article>
-      <article class="mcard m-g">
-        <h3>Sample: where checks run</h3>
-        <ol class="m-list m-routes">${ROUTES.map((r, i) => listRow(i, r.label, r.value, `${r.value}%`, 300 + i * 90)).join('')}</ol>
+      <article class="mcard m-g m-verdict">
+        <h3>Verdict</h3>
+        <div class="m-verdict-top"><span class="m-risk"><span class="m-risk-dot" aria-hidden="true"></span>High risk</span><code class="m-source">inferenceSource: on-device</code></div>
+        <p class="m-next"><span>Safer next step</span>Don&apos;t connect your wallet. Open the project&apos;s official site yourself and check the offer there.</p>
       </article>
     </div>
   </div>`
