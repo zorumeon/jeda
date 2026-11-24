@@ -1,0 +1,156 @@
+/* Devpost theme. Loaded last: a crisp grotesk display face, one consistent card system and an equal-height check layout. */
+:root {
+  --display: "Space Grotesk Variable", "Space Grotesk", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --sans: "Geist Variable", Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: var(--display);
+  --matrix: var(--display);
+  --card-radius: 20px;
+  --card-pad: 1.75rem;
+  --card-gap: 1.5rem;
+  --card-border: 1px solid var(--border);
+  --card-shadow: 0 1px 2px rgba(20, 22, 28, .05), 0 20px 44px -30px rgba(20, 22, 28, .3);
+  --brand-gradient: linear-gradient(95deg, var(--brand-orange) 0%, #ff5a5f 45%, var(--brand-blue) 100%);
+}
+[data-theme="dark"] {
+  --card-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 24px 48px -30px rgba(0, 0, 0, .9);
+}
+
+body { font-family: var(--sans); letter-spacing: -.01em; }
+
+/* Typography: one display face, solid weights, no italics */
+h1, h2, h3,
+.panel-heading h3, .result-top h3, .hero-result-title, .type-card h3, .trust-card h3, .steps h3, .rules h3,
+.console-head h3, .tour-head h3, .section-title h2, .onboarding-body h2 {
+  font-family: var(--display);
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -.03em;
+}
+h1, h2 { line-height: 1.02; }
+.hero h1 { font-weight: 700; letter-spacing: -.045em; font-size: clamp(2.75rem, 7.5vw, 5.75rem); line-height: .98; }
+.section-head h2 { font-size: clamp(2rem, 4.2vw, 3rem); }
+.page-hero h1 { font-weight: 700; letter-spacing: -.04em; }
+.cta-band h2 { font-weight: 700; letter-spacing: -.035em; }
+h1 em, h2 em, .footer-tagline em {
+  font-style: normal;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.panel-heading h3, .result-top h3 { font-size: 1.35rem; line-height: 1.2; }
+.type-card h3, .trust-card h3, .steps h3 { font-size: 1.25rem; line-height: 1.25; }
+.rules h3 { font-size: 1.85rem; }
+.console-head h3, .tour-head h3 { font-size: 1.25rem; }
+.eyebrow { font-family: var(--mono); font-weight: 500; font-size: .68rem; letter-spacing: .14em; }
+
+.stat strong, .step-no, .mini-stat strong, .eval-metric strong, .lane-count, .tour-no {
+  font-family: var(--display);
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -.04em;
+}
+.step-no, [data-theme="dark"] .step-no { font-size: 2.5rem; }
+.type-signal { font-family: var(--mono); font-style: normal; font-size: .8rem; letter-spacing: 0; }
+.strip-inner strong { font-family: var(--display); font-weight: 600; font-size: 1.1rem; letter-spacing: -.02em; }
+.onboarding-steps li > span { font-family: var(--mono); font-style: normal; font-size: .85rem; font-weight: 500; }
+.footer-tagline { font-family: var(--display); font-weight: 600; font-size: 1.75rem !important; letter-spacing: -.035em; line-height: 1.1; }
+.footer-wordmark { font-family: var(--display); font-style: normal; font-weight: 700; letter-spacing: -.07em; }
+.brand { font-family: var(--display); font-weight: 700; letter-spacing: -.05em; }
+
+/* One card system for every surface in the check section */
+.panel, .result-panel, .empty-result, .console, .tour, .comparison {
+  border-radius: var(--card-radius);
+  padding: var(--card-pad);
+  border: var(--card-border);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+.result-panel { box-shadow: inset 0 3px 0 var(--r, var(--brand-blue)), var(--card-shadow); }
+.empty-result { border-style: dashed; border-color: var(--border-strong); box-shadow: none; background: color-mix(in srgb, var(--surface) 60%, transparent); }
+
+/* Check layout: two equal columns that always share the same height */
+.check-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--card-gap); align-items: stretch; }
+.input-panel { display: flex; flex-direction: column; min-width: 0; }
+.input-panel .textarea-wrap { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 220px; }
+.input-panel textarea { flex: 1 1 auto; min-height: 180px; resize: none; }
+.input-panel .form-actions { margin-top: auto; padding-top: 1.25rem; }
+.check-side { position: static; display: flex; flex-direction: column; gap: var(--card-gap); min-width: 0; }
+.check-side > .result-panel, .check-side > .empty-result { flex: 1 1 auto; }
+.empty-result { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; }
+
+.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.result-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.result-top .eyebrow, .console-head .eyebrow { margin-bottom: .35rem; }
+
+/* Second opinion now lives inside the assessment card */
+.result-panel .escalation { margin-top: 1.25rem; padding: 1rem 1.1rem; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.result-panel .escalation > div { flex: 1 1 16rem; }
+.result-panel .escalation .btn-small { flex: 0 0 auto; }
+
+/* Consistent vertical rhythm under the grid */
+.tour { margin-bottom: var(--card-gap); }
+.console, .comparison { margin-top: var(--card-gap); }
+.console-head { align-items: flex-end; }
+.lane { border-radius: 14px; }
+
+/* Buttons: slightly bolder for a punchier demo */
+.btn-primary { font-family: var(--display); font-weight: 600; letter-spacing: -.01em; border-radius: 999px; padding: .85rem 1.4rem; }
+.cta-white, .btn-blue, .btn-white-sm { font-family: var(--display); font-weight: 600; letter-spacing: -.01em; }
+.chip { font-weight: 500; }
+
+/* Hero strip: submission facts read as compact tags */
+.strip-inner { justify-content: center; flex-wrap: wrap; }
+.strip-inner strong { padding: .3rem .8rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font-size: .95rem; }
+
+/* Impact: the real-world problem, stated with a sourced number */
+.impact-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 3rem; align-items: center; }
+.impact-figure {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 1rem;
+  padding: 2.25rem; border-radius: 24px; color: var(--inverse-ink);
+  background: radial-gradient(80% 90% at 0% 0%, rgba(255, 122, 48, .38), transparent 60%), radial-gradient(70% 90% at 100% 100%, rgba(59, 110, 245, .42), transparent 60%), var(--inverse);
+  border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+}
+.impact-figure .eyebrow { color: rgba(242, 241, 236, .65); }
+.impact-number { font-family: var(--display); font-weight: 700; font-size: clamp(4rem, 9vw, 6.5rem); line-height: .9; letter-spacing: -.06em; }
+.impact-caption { font-size: 1.05rem; line-height: 1.5; color: rgba(242, 241, 236, .85); max-width: 22rem; }
+.impact-facts { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: .5rem 0 0; }
+.impact-facts div { padding: .9rem 1rem; border-radius: 14px; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .1); }
+.impact-facts dt { font-family: var(--display); font-weight: 600; font-size: 1.5rem; letter-spacing: -.03em; }
+.impact-facts dd { margin: .15rem 0 0; font-size: .8rem; color: rgba(242, 241, 236, .7); }
+.impact-source { font-family: var(--mono); font-size: .7rem; color: rgba(242, 241, 236, .55); }
+.impact-copy h2 { font-size: clamp(2rem, 4.2vw, 3.1rem); margin-top: .75rem; }
+.impact-copy .lead { margin-top: 1.25rem; color: var(--muted); }
+.audience-list { list-style: none; padding: 0; margin: 1.75rem 0 0; display: grid; gap: .75rem; }
+.audience-list li { display: grid; grid-template-columns: 11rem 1fr; gap: 1rem; padding: 1rem 1.15rem; border-radius: 14px; border: var(--card-border); background: var(--surface); }
+.audience-list strong { font-family: var(--display); font-weight: 600; letter-spacing: -.02em; }
+.audience-list span { color: var(--muted); font-size: .92rem; line-height: 1.5; }
+
+/* Firebase stack */
+.stack-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1rem; }
+.stack-card { grid-column: span 3; display: flex; flex-direction: column; gap: .75rem; padding: 1.5rem; border-radius: var(--card-radius); border: var(--card-border); background: var(--surface); box-shadow: var(--card-shadow); transition: transform .2s ease, border-color .2s ease; }
+.stack-card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.stack-card.featured { grid-column: span 6; background: linear-gradient(135deg, color-mix(in srgb, var(--brand-blue) 10%, var(--surface)), color-mix(in srgb, var(--brand-orange) 8%, var(--surface))); border-color: color-mix(in srgb, var(--brand-blue) 30%, var(--border)); }
+.stack-card.featured h3 { font-size: 1.6rem; }
+.stack-card.featured p { max-width: 46rem; font-size: 1rem; }
+.stack-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.stack-tag { font-family: var(--mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: .25rem .6rem; border-radius: 999px; border: 1px solid var(--border); }
+.stack-card h3 { font-size: 1.2rem; }
+.stack-card p { color: var(--muted); font-size: .92rem; line-height: 1.6; }
+
+@media (max-width: 960px) {
+  .impact-grid { grid-template-columns: 1fr; gap: 2rem; }
+}
+@media (max-width: 600px) {
+  .audience-list li { grid-template-columns: 1fr; gap: .25rem; }
+  .stack-card, .stack-card.featured { grid-column: span 6; }
+  .impact-figure { padding: 1.5rem; }
+}
+@media (max-width: 960px) {
+  .check-grid { grid-template-columns: 1fr; }
+  .input-panel textarea { resize: vertical; }
+}
+@media (max-width: 600px) {
+  :root { --card-pad: 1.25rem; --card-gap: 1rem; }
+}

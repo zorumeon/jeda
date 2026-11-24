@@ -6,12 +6,12 @@ import { mountMotionDashboard } from './motion-dashboard'
 import committedEvaluationResults from '../evaluation-results.json'
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
-import '@fontsource/instrument-serif/400.css'
-import '@fontsource/instrument-serif/400-italic.css'
+import '@fontsource-variable/space-grotesk'
 import './style.css'
 import './theme-glass.css'
 import './theme-elegant.css'
 import './motion-dashboard.css'
+import './theme-devpost.css'
 
 type Result = { verdict: Verdict; source: string; latencyMs: number; reason: string }
 type EvaluationOutput = { id: string; category: string; mode: 'PREFER_ON_DEVICE' | 'ONLY_IN_CLOUD'; stage: 'preferred' | 'cloud-only' | 'second-opinion'; path: string; expected: 'scam' | 'benign'; actual?: 'scam' | 'benign'; latencyMs?: number; uncertainty?: number; lowConfidence?: boolean; error?: string }
@@ -155,7 +155,7 @@ function renderFooter(inert = '') {
     <div class="footer-top">
       <div class="footer-brand"><a class="brand" href="#" data-page="scan"><span class="logo-mark" aria-hidden="true"><i></i><i></i></span>jeda</a><p class="footer-tagline">Take a beat <em>before</em> you connect.</p><p>A privacy-first pause button for crypto messages and wallet approvals. Heuristic guidance, not a guarantee. Not financial advice.</p></div>
       <div class="footer-col"><h3>Product</h3><button data-jump="check">Check a message</button><button data-jump="types">Scam types</button><button data-page="history">History</button></div>
-      <div class="footer-col"><h3>Transparency</h3><button data-page="diagnostics">How it works</button><button data-page="evaluation">Evaluation</button><button data-jump="trust">Is it safe?</button></div>
+      <div class="footer-col"><h3>Transparency</h3><button data-page="diagnostics">How it works</button><button data-jump="stack">Firebase stack</button><button data-page="evaluation">Evaluation</button><button data-jump="trust">Is it safe?</button></div>
       <div class="footer-col"><h3>Built on</h3><span>Firebase AI Logic</span><span>Gemini Nano on-device</span><span>Chrome Prompt API</span></div>
     </div>
     <div class="footer-bottom"><span>&copy; 2026 Jeda &middot; #BuildHybridAI</span><span>Always verify through official channels.</span><span>Never share your recovery phrase.</span></div>
@@ -171,14 +171,48 @@ function renderHero() {
     <ul class="mode-chips" aria-label="Firebase AI Logic inference modes used by Jeda"><li>${icon('cpu')}<code>PREFER_ON_DEVICE</code>default</li><li>${icon('lock')}<code>ONLY_ON_DEVICE</code>Privacy mode</li><li>${icon('cloud')}<code>ONLY_IN_CLOUD</code>long input or consent</li></ul>
     <div class="motion-slot" id="motion-slot"></div>
   </div>
-  <div class="hero-strip"><div class="container strip-inner"><span>Built with the tools behind private, on-device AI</span><strong>Firebase AI Logic</strong><strong>Gemini Nano</strong><strong>Chrome Prompt API</strong><strong>App Check</strong></div></div></section>`
+  <div class="hero-strip"><div class="container strip-inner"><span>Submission at a glance</span><strong>Web (Chrome)</strong><strong>Gemini Nano on-device</strong><strong>Cloud fallback</strong><strong>5 Firebase products</strong><strong>Apache-2.0</strong></div></div></section>`
 }
 function renderStats() {
   const stats = [['0', 'wallet connections, ever'], ['6', 'scam categories explained'], [currentPolicy.maxOnDeviceChars.toLocaleString(), 'max characters for on-device checks'], ['40', 'synthetic evaluation cases']]
   return `<section class="stats"><div class="container stats-grid">${stats.map(([v, l]) => `<div class="stat"><strong>${v}</strong><span>${l}</span></div>`).join('')}</div></section>`
 }
+function renderImpact() {
+  const audiences = [
+    ['Newcomers', 'First-time wallet owners who have never seen an approval prompt or a fake support DM.'],
+    ['Community moderators', 'People who triage dozens of suspicious links in Discord and Telegram every day.'],
+    ['Older holders', 'The group that reported the largest crypto losses and is the most targeted by urgency scripts.'],
+  ]
+  return `<section class="section impact" id="impact"><div class="container impact-grid">
+    <div class="impact-figure">
+      <span class="eyebrow">THE PROBLEM</span>
+      <strong class="impact-number">$9.3B</strong>
+      <p class="impact-caption">lost to crypto-related fraud reported to the FBI in 2024, up 66% on the year before.</p>
+      <dl class="impact-facts"><div><dt>149,686</dt><dd>complaints filed</dd></div><div><dt>$2.8B</dt><dd>lost by people over 60</dd></div></dl>
+      <small class="impact-source">Source: FBI Internet Crime Complaint Center, 2024 Internet Crime Report.</small>
+    </div>
+    <div class="impact-copy">
+      <h2>Scams win in the <em>ten seconds</em> before you click.</h2>
+      <p class="lead">The message that drains a wallet usually contains your own recovery phrase or an approval you were rushed into. That is exactly the text you should never paste into a random cloud tool. Jeda checks it on your device first, so the safest moment to pause is also the most private one.</p>
+      <ul class="audience-list">${audiences.map(([name, text]) => `<li><strong>${name}</strong><span>${text}</span></li>`).join('')}</ul>
+    </div>
+  </div></section>`
+}
+function renderStack() {
+  const stack = [
+    ['cpu', 'Firebase AI Logic', 'Hybrid inference', `One <code>getGenerativeModel</code> call with <code>PREFER_ON_DEVICE</code>, <code>ONLY_ON_DEVICE</code> and <code>ONLY_IN_CLOUD</code>. Every result reports its real <code>inferenceSource</code>.`],
+    ['shield', 'App Check', 'reCAPTCHA Enterprise', 'Protects the cloud model from abuse. Without a valid token, Jeda locks itself to on-device only instead of failing open.'],
+    ['refresh', 'Remote Config', 'Live routing policy', 'The on-device character limit, default mode and second-opinion threshold change without redeploying.'],
+    ['lock', 'Authentication', 'Anonymous sign-in', 'Each visitor gets a private, account-less identity so history is scoped to them alone.'],
+    ['book', 'Firestore', 'Per-user history', 'Stores risk level, source and latency by default. Message text is saved only after an explicit opt-in.'],
+  ] as const
+  return `<section class="section" id="stack"><div class="container">
+    <div class="section-head center"><span class="eyebrow">BUILT ON FIREBASE</span><h2>Five Firebase products, one hybrid pipeline</h2><p class="lead">Every product below is imported and called at runtime in <code>src/firebase.ts</code>, not just listed in the README.</p></div>
+    <div class="stack-grid">${stack.map(([ic, name, tag, text], i) => `<article class="stack-card${i === 0 ? ' featured' : ''}"><div class="stack-top"><span class="type-icon">${icon(ic)}</span><span class="stack-tag">${tag}</span></div><h3>${name}</h3><p>${text}</p></article>`).join('')}</div>
+  </div></section>`
+}
 function renderSections() {
-  return `<section class="section alt" id="types"><div class="container">
+  return `${renderImpact()}<section class="section alt" id="types"><div class="container">
       <div class="section-head center"><span class="eyebrow">WHAT JEDA LOOKS FOR</span><h2>Six patterns behind most crypto scams</h2><p class="lead">Every flag in your assessment maps to one of these categories, with a plain-language explanation.</p></div>
       <div class="types-grid">${scamTypes.map(t => `<article class="type-card"><span class="type-icon">${icon(t.icon)}</span><h3>${t.name}</h3><p>${t.desc}</p><span class="type-signal">${t.signal}</span></article>`).join('')}</div>
     </div></section>
@@ -197,6 +231,7 @@ function renderSections() {
       </div>
       <div class="center-link"><button class="link-button" data-page="diagnostics">See full routing policy ${icon('arrow')}</button></div>
     </div></section>
+    ${renderStack()}
     <section class="section alt" id="trust"><div class="container">
       <div class="section-head center"><span class="eyebrow">IS IT SAFE?</span><h2>Built to keep your secrets yours</h2></div>
       <div class="trust-grid">
@@ -234,8 +269,7 @@ function renderScan() {
         ${errorMessage ? `<div class="error-box" role="alert"><span class="notice-icon">${icon('alert')}</span><div><p>${esc(errorMessage)}</p>${cloudFallbackAvailable ? '<button id="cloud-fallback" class="btn-small">Ask before sending to cloud</button>' : ''}</div></div>` : ''}
       </section>
       <aside class="check-side" aria-label="Assessment">
-        ${result ? renderResult(result) : `<section class="empty-result"><span class="empty-icon">${icon('shield')}</span><strong>Your assessment will appear here</strong><p>Start with a message on the left. Your input is checked for sensitive secrets before any model runs.</p><ul class="empty-list"><li>${icon('check')} Risk level from low to critical</li><li>${icon('check')} Each red flag explained</li><li>${icon('check')} One safe next step</li></ul></section>`}
-        ${showEscalation ? `<div class="escalation"><div><strong>Want a second opinion?</strong><p>This result has limited evidence. A cloud model can review the same message. The text leaves this device only if you approve.</p></div><button class="btn-small" id="escalate">Get a second opinion ${icon('arrow')}</button></div>` : ''}
+        ${result ? renderResult(result, Boolean(showEscalation)) : `<section class="empty-result"><span class="empty-icon">${icon('shield')}</span><strong>Your assessment will appear here</strong><p>Start with a message on the left. Your input is checked for sensitive secrets before any model runs.</p><ul class="empty-list"><li>${icon('check')} Risk level from low to critical</li><li>${icon('check')} Each red flag explained</li><li>${icon('check')} One safe next step</li></ul></section>`}
       </aside>
     </div>
     ${renderConsole()}
@@ -266,8 +300,9 @@ function renderConsole() {
     <p class="console-note">On-device and cloud counts come from the Firebase SDK&apos;s <code>response.inferenceSource</code> for each completed check, not from the mode that was requested.</p>
   </section>`
 }
-function renderResult(item: Result) {
+function renderResult(item: Result, showEscalation = false) {
   const level = riskOrder.indexOf(item.verdict.risk)
+  const escalation = showEscalation ? `<div class="escalation"><div><strong>Want a second opinion?</strong><p>This result has limited evidence. A cloud model can review the same message. The text leaves this device only if you approve.</p></div><button class="btn-small" id="escalate">Get a second opinion ${icon('arrow')}</button></div>` : ''
   return `<section class="result-panel risk-${item.verdict.risk}${animateResult ? ' enter' : ''}" aria-live="polite">
     <div class="result-top"><div><span class="eyebrow">ASSESSMENT</span><h3>Safety assessment</h3></div><div class="risk-chip risk-${item.verdict.risk}"><span class="risk-dot"></span>${riskName(item.verdict.risk)} risk</div></div>
     <div class="risk-meter" role="meter" aria-label="Risk level: ${item.verdict.risk}" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${level + 1}"><div class="meter-bars" style="--filled:${level + 1}">${riskOrder.map((r, i) => `<span class="${level >= i ? 'filled' : ''}" style="--i:${i}"><small>${riskName(r)}</small></span>`).join('')}</div></div>
@@ -277,6 +312,7 @@ function renderResult(item: Result) {
     <div class="recommendation"><span class="recommend-icon">${icon('shield')}</span><div><span>RECOMMENDED NEXT STEP</span><p>${esc(item.verdict.recommendation)}</p></div></div>
     <div class="result-bottom"><span class="run-badge ${item.source}">${icon(item.source === 'cloud' ? 'cloud' : 'cpu')}Ran ${item.source === 'on-device' ? 'on-device' : item.source === 'cloud' ? 'in cloud' : 'with unknown source'} · ${item.latencyMs} ms</span><button class="btn-small ghost" id="copy-summary">${icon('copy')} Copy safe summary</button></div>
     <p class="run-reason">${esc(item.reason)}</p>
+    ${escalation}
     <p class="disclaimer">Heuristic guidance, not a guarantee. Jeda cannot verify contract code or guarantee safety.</p></section>`
 }
 function resultCard(item: Result) {
