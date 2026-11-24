@@ -46,7 +46,6 @@ All work in this repository was done during the submission period, starting 11 N
 - The 40-case synthetic evaluation set, the in-browser evaluation harness, and the `record-evaluation.mjs` script.
 - Documentation, the threat model, the judge testing guide, and the CSS-only hero and result-card design (no third-party image assets).
 
-[TO ADD: confirm this list against your commit history before submitting.]
 
 ## Privacy and responsible use
 The app does not connect to wallets, sign transactions, open submitted URLs, or execute pasted text. Standard `PREFER_ON_DEVICE` routing can fall back to the cloud under Firebase SDK policy, and the interface discloses that. Privacy mode uses `ONLY_ON_DEVICE`, and an unavailable local model does not trigger an automatic cloud request. Long-input and low-confidence cloud review paths are clearly disclosed and require the user's Check action or a separate confirmation. The result is heuristic guidance, not a guarantee, audit, or financial recommendation.
@@ -77,5 +76,4 @@ Use the files in `devpost-assets/`: the cover `jeda-hero-1200x630.png`, then scr
 - Demo video (public on YouTube): [TO ADD]
 - Source repository: https://github.com/zorumeon/jeda
 - Live site: https://jeda-dev.web.app
-- Measured evaluation report and run metadata, if one is recorded: [TO ADD]
-- Team and event-specific acknowledgments: [TO ADD]
+- Evaluation: the repository includes the 40-case synthetic set and the in-browser harness. No measured report is published with this submission, and no accuracy figure is claimed.
