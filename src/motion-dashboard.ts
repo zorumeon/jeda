@@ -17,12 +17,11 @@ const GLYPHS: Record<string, string[]> = {
   ';': ['0', '0', '0', '0', '0', '0', '0'],
 }
 
+// The model returns flag categories with explanations only, so no per-signal severity is shown here.
 const SIGNALS = [
-  { label: 'Urgency & pressure', value: 92, level: 'High' },
-  { label: 'Fake airdrop', value: 78, level: 'High' },
-  { label: 'Approval drainer', value: 70, level: 'Critical' },
-  { label: 'Recovery offer', value: 30, level: 'Low' },
-  { label: 'Fake giveaway', value: 22, level: 'Low' },
+  { label: 'Urgency & pressure', value: 90, level: 'Flagged' },
+  { label: 'Fake airdrop', value: 90, level: 'Flagged' },
+  { label: 'Approval drainer', value: 90, level: 'Flagged' },
 ]
 const ROUTES = [
   { label: 'On your device', value: 78 },

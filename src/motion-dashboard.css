@@ -126,3 +126,15 @@
   .live-dot, .sender-flag, .m-steps li[data-state="active"] .step-dot { animation: none; }
   .dot-bar, .mcard { transition: none; }
 }
+
+/* Hide cards that imply data Jeda does not collect or produce:
+   usage growth, flagged-by-hour statistics, and a verdict confidence percentage.
+   The draw code skips canvases with zero width, so hidden cards cost nothing. */
+.mdash .m-a, .mdash .m-c, .mdash .m-e { display: none; }
+@media (min-width: 1101px) {
+  .mdash .m-b { grid-column: span 5; }
+  .mdash .m-d { grid-column: span 7; }
+}
+@media (min-width: 641px) and (max-width: 1100px) {
+  .mdash .m-b { grid-column: span 2; }
+}
