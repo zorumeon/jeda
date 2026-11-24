@@ -60,7 +60,7 @@ Record and publish a real evaluation run, expand the reviewed synthetic corpus, 
 ## Testing instructions for judges
 No login, wallet, or real data is needed. Every example in the app is synthetic.
 
-1. **Open the hosted site:** [TO ADD: hosted site URL]. Use desktop Chrome.
+1. **Open the hosted site:** https://jeda-dev.web.app. Use desktop Chrome.
 2. **Use "Quick tour for judges"** above the checker. Its four buttons set up each step below; nothing is sent to a model until you click **Check this message**.
 3. **01 Scam verdict.** Loads the synthetic "Claim your airdrop" message. Click **Check this message**. The result shows a risk level, the signals found, one safe next step, and where the model ran.
 4. **02 Secret guard.** Turns on **Privacy mode** (on-device only) and pastes this synthetic seed phrase: `apple river stone cloud maple tiger lemon ocean pencil garden window silver`. Jeda blocks the check before any model runs and shows a warning with a **Redact and continue** button.
@@ -75,7 +75,7 @@ Use the files in `devpost-assets/`: the cover `jeda-hero-1200x630.png`, then scr
 
 ## Links
 - Demo video (public on YouTube): [TO ADD]
-- Source repository: [TO ADD]
-- Live site: [TO ADD]
+- Source repository: https://github.com/zorumeon/jeda
+- Live site: https://jeda-dev.web.app
 - Measured evaluation report and run metadata, if one is recorded: [TO ADD]
 - Team and event-specific acknowledgments: [TO ADD]
