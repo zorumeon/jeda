@@ -112,7 +112,7 @@ function template() {
     <div class="mdash-head">
       <span class="mdash-brand"><span class="logo-mark" aria-hidden="true"><i></i><i></i></span>jeda</span>
       <span class="mdash-sub">Demo workspace, synthetic data</span>
-      <span class="mdash-live"><span class="live-dot" aria-hidden="true"></span>Live demo</span>
+      <span class="mdash-live"><span class="live-dot" aria-hidden="true"></span>Sample data</span>
     </div>
     <div class="mdash-grid">
       <article class="mcard m-a">
@@ -158,7 +158,7 @@ function template() {
         <ol class="m-list m-signals">${SIGNALS.map((s, i) => listRow(i, s.label, s.value, s.level, i * 90)).join('')}</ol>
       </article>
       <article class="mcard m-g">
-        <h3>Where checks run</h3>
+        <h3>Sample: where checks run</h3>
         <ol class="m-list m-routes">${ROUTES.map((r, i) => listRow(i, r.label, r.value, `${r.value}%`, 300 + i * 90)).join('')}</ol>
       </article>
     </div>
