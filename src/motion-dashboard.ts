@@ -102,7 +102,7 @@ function template() {
   return `<div class="mdash" role="region" aria-label="Animated demo dashboard. All values are synthetic.">
     <div class="mdash-head">
       <span class="mdash-brand"><span class="logo-mark" aria-hidden="true"><i></i><i></i></span>jeda</span>
-      <span class="mdash-sub">Demo workspace, synthetic data</span>
+      <span class="mdash-sub">Demo workspace · simulated, synthetic data</span>
       <span class="mdash-live"><span class="live-dot" aria-hidden="true"></span>Sample data</span>
     </div>
     <div class="mdash-grid">
