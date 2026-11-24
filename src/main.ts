@@ -322,7 +322,7 @@ function renderConsole() {
     { id: 'guard', icon: 'lock', name: 'Stopped by secret guard', detail: 'Blocked locally, no model called' },
   ]
   return `<section class="console" aria-labelledby="console-title">
-    <div class="console-head"><div><span class="eyebrow">HYBRID CONSOLE</span><h3 id="console-title">Where your checks ran</h3></div><span class="console-scope">This tab only · starts at zero · not stored</span></div>
+    <div class="console-head"><div><span class="eyebrow">STEP 3 · HYBRID CONSOLE</span><h3 id="console-title">Where your checks ran</h3></div><span class="console-scope">This tab only · starts at zero · not stored</span></div>
     <ul class="lanes">${lanes.map(lane => `<li class="lane ${lastPath === lane.id ? 'last' : ''}"><span class="lane-top">${icon(lane.icon)}${lane.name}</span><span class="lane-count" aria-label="${runs[lane.id]} ${runs[lane.id] === 1 ? 'check' : 'checks'}">${String(runs[lane.id]).padStart(2, '0')}</span><small>${esc(lane.detail)}</small>${lastPath === lane.id ? '<span class="lane-here">Ran here</span>' : ''}</li>`).join('')}</ul>
     <p class="console-note">On-device and cloud counts come from the Firebase SDK&apos;s <code>response.inferenceSource</code> for each completed check, not from the mode that was requested.</p>
   </section>`

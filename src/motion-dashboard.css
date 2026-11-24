@@ -116,3 +116,11 @@
   .live-dot, .sender-flag, .m-steps li[data-state="active"] .step-dot { animation: none; }
   .dot-bar, .mcard { transition: none; }
 }
+
+/* Aligned bento: same column split in both rows, equal card heights (desktop) */
+@media (min-width: 1101px) {
+  .mdash-grid { grid-auto-rows: 1fr; }
+  .mdash-grid > .mcard { height: auto; align-self: stretch; }
+  .m-f { grid-column: span 5; }
+  .m-g { grid-column: span 7; }
+}
