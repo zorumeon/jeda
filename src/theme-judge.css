@@ -102,3 +102,11 @@
 .input-panel .check-settings .route-note:has(.route-badge.cloud) { flex: 1 1 100%; }
 .input-panel .check-settings:has(#privacy-toggle:checked) .route-note p,
 .input-panel .check-settings .route-note:has(.route-badge.cloud) p { display: block; }
+
+/* Final layout rule: both columns always share one height; the textarea absorbs extra space */
+@media (min-width: 961px) {
+  .check-grid { align-items: stretch; }
+  .input-panel .textarea-wrap { flex: 1 1 auto; display: flex; flex-direction: column; }
+  .input-panel textarea { flex: 1 1 auto; height: auto; min-height: 96px; resize: none; }
+  .check-side > .result-panel, .check-side > .checking { flex: 1 1 auto; }
+}
