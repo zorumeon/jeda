@@ -2,6 +2,8 @@
 
 **Pause before you connect.** Jeda is a privacy-first crypto-message triage prototype that helps people spot common scam signals without connecting a wallet. It uses Vite + TypeScript and Firebase AI Logic hybrid inference.
 
+**Live demo:** https://jeda-dev.web.app
+
 ## Value proposition
 
 - **For** everyday crypto and NFT users who receive airdrop claims, "official support" DMs, recovery offers, and wallet approval requests.
