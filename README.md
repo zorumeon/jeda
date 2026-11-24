@@ -33,7 +33,7 @@ flowchart TD
 
 - `src/secret-guard.ts` checks input before any Firebase call or write; `src/policy.ts` implements routing, confidence escalation, and bounded verdict validation.
 - `src/firebase.ts` initializes Firebase, App Check, Remote Config, AI Logic hybrid models, anonymous Auth, and user-scoped Firestore history. `modelFor()` calls `getGenerativeModel()` with the selected `InferenceMode`, a shared system instruction, cloud `responseSchema`, and on-device `responseConstraint`. `analyze()` calls `initializeDeviceModel()` when needed, invokes `generateContent()`, validates with `parseVerdict()`, and returns the SDK's actual `response.inferenceSource`.
-- `src/main.ts` renders the browser app and evaluation harness. The model is created and called only in the user's action flow. No wallet provider, transaction signing, URL fetching, multimodal input, or server-side model proxy is included.
+- `src/main.ts` renders the browser app and evaluation harness. Its hybrid console ("Where your checks ran") counts completed checks by the SDK's `response.inferenceSource` and counts secret-guard blocks; the counters live in memory for the current tab only. The model is created and called only in the user's action flow. No wallet provider, transaction signing, URL fetching, multimodal input, or server-side model proxy is included.
 - `public/eval/cases.json` is the synthetic labeled set; `docs/threat-model.md` and `MANUAL_STEPS.md` cover limitations and setup.
 
 ## Run locally
@@ -111,9 +111,12 @@ Low confidence is defined in `src/policy.ts`: invalid/missing schema, risk `medi
 No login, wallet, or real data is needed. Every example in the app is synthetic.
 
 1. **Open the hosted site:** [TO ADD: hosted site URL]. Use desktop Chrome.
-2. **Check an example.** Under "Try an example", click the **Claim your airdrop** chip, then click **Check this message**. The result panel shows a risk level, the signals found, one safe next step, and a badge that says where the model ran.
-3. **Try Privacy mode and the secret guard.** Turn on **Privacy mode** (on-device only). Paste this synthetic seed phrase into the text box: `apple river stone cloud maple tiger lemon ocean pencil garden window silver`. Jeda blocks the check before any model runs and shows a warning with a **Redact and continue** button. Click it to replace the phrase with `[RECOVERY PHRASE REDACTED]`.
-4. **Open Evaluation and History.** Evaluation lists the 40 synthetic test cases and stays empty until a real run is recorded. History is anonymous and stores metadata only by default.
+2. **Use "Quick tour for judges"** above the checker. Its four buttons set up each step below; nothing is sent to a model until you click **Check this message**.
+3. **01 Scam verdict.** Loads the synthetic "Claim your airdrop" message. Click **Check this message**. The result panel shows a risk level, the signals found, one safe next step, and a badge that says where the model ran.
+4. **02 Secret guard.** Turns on **Privacy mode** (on-device only) and pastes this synthetic seed phrase: `apple river stone cloud maple tiger lemon ocean pencil garden window silver`. Jeda blocks the check before any model runs and shows a warning with a **Redact and continue** button. Click it to replace the phrase with `[RECOVERY PHRASE REDACTED]`.
+5. **03 Second opinion.** Loads the synthetic "Routine approval" message. Click **Check this message**. If the on-device result is low-confidence, Jeda offers a cloud second opinion that runs only after you confirm.
+6. **04 Evaluation.** Opens the Evaluation page, which lists the 40 synthetic test cases and stays empty until a real run is recorded. History is anonymous and stores metadata only by default.
+7. **Read the hybrid console.** "Where your checks ran", below the checker, counts the checks in this tab that ran on-device, ran in the cloud, or were stopped by the secret guard, and marks the path of the latest one with "Ran here". The counts start at zero and are not stored.
 
 Where inference runs:
 
@@ -153,8 +156,6 @@ No keys are stored in this repository. Do not commit `.env.local` or `.firebaser
 
 ## Known limitations
 
-- On-device inference speed depends on the device. Chrome classifies weaker machines as "Low" performance class (see `chrome://on-device-internals`); on those, the first on-device check can take 15 to 60 seconds while Gemini Nano loads. "Get a second opinion" runs the cloud path and is the faster alternative.
-
 On-device inference requires a supported desktop Chrome version, enabled Prompt API flag, a downloaded model, and suitable device resources. The model is not guaranteed to work offline until it has been initialized while online. Firebase cloud inference requires project setup, billing/backend access as applicable, and enforced App Check. The local secret detector matches words against the English BIP-39 list; it does not validate the mnemonic checksum or cover other languages. The classifier and synthetic evaluation corpus are not security audits or production benchmarks.
 
 ## Assets
@@ -162,9 +163,10 @@ On-device inference requires a supported desktop Chrome version, enabled Prompt 
 - **No third-party image assets are used.** The app ships no photos, illustrations, or image files. The hero, the example message and assessment cards, the empty result state, and the onboarding header are built with HTML and CSS only.
 - Icons are inline SVG paths written in `src/main.ts`, and the favicon is an inline SVG data URI in `index.html`.
 - The UI uses no third-party logos, ads, or brand marks. Technology names such as Firebase AI Logic appear as plain text only.
-- The Geist font is loaded from Google Fonts under the SIL Open Font License.
+- The Geist and Doto fonts (SIL Open Font License) are self-hosted from the `@fontsource-variable/geist` and `@fontsource/doto` npm packages and bundled by Vite. The app makes no request to Google Fonts.
+- The interface style lives in `src/style.css` (layout and components) and `src/theme-glass.css` (the glass theme: translucent cards over slow-moving background light, dot-matrix numerals, and a dark mode that spreads from the theme button using the View Transitions API). Motion is disabled when the system asks for reduced motion.
 - `src/bip39-english.ts` contains the English BIP-39 wordlist from [bitcoin/bips](https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt) (MIT licensed). It is used only by the local secret guard.
-- `devpost-assets/` holds the Devpost cover image (`jeda-hero-1200x630.png`, captured at 1800×945 and scaled down) and four screenshots captured from this app running in Chrome. They were taken in the demo workspace without Firebase keys, so `screenshot-04-after-check-demo-workspace-1440.png` shows the App Check notice rather than a model result. Replace it with a capture from a configured project to show a real assessment.
+- `devpost-assets/` holds the Devpost cover image (`jeda-hero-1200x630.png`) and five screenshots captured from this app running in Chrome: desktop, mobile, dark mode, the secret guard blocking a synthetic seed phrase, and the hybrid console. They were taken in the demo workspace without Firebase keys, so none of them shows a model result; the console screenshot shows one secret-guard block and zero model runs. Add a capture from a configured project to show a real assessment.
 
 ## Project and submission materials
 

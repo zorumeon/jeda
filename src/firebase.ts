@@ -65,7 +65,7 @@ function modelFor(mode: InferenceModeName) {
   let model = models.get(mode)
   if (!model) {
     const inferenceMode = mode === 'ONLY_ON_DEVICE' ? InferenceMode.ONLY_ON_DEVICE : mode === 'ONLY_IN_CLOUD' ? InferenceMode.ONLY_IN_CLOUD : mode === 'PREFER_IN_CLOUD' ? InferenceMode.PREFER_IN_CLOUD : InferenceMode.PREFER_ON_DEVICE
-    model = getGenerativeModel(ai, { mode: inferenceMode, inCloudParams: { model: CLOUD_MODEL, systemInstruction, generationConfig: { responseMimeType: 'application/json', responseSchema } }, onDeviceParams: { createOptions: { initialPrompts: [{ role: 'system', content: [{ type: 'text', value: systemInstruction }] }] }, promptOptions: { responseConstraint: responseSchema } } })
+    model = getGenerativeModel(ai, { mode: inferenceMode, systemInstruction, inCloudParams: { model: CLOUD_MODEL, generationConfig: { responseMimeType: 'application/json', responseSchema } }, onDeviceParams: { promptOptions: { responseConstraint: responseSchema } } })
     models.set(mode, model)
   }
   return model
@@ -89,18 +89,12 @@ export async function initializeOnDevice(mode: InferenceModeName = 'PREFER_ON_DE
   if (!ai) throw new Error('Firebase is not configured yet.')
   await prepareDeviceModel(mode, onProgress)
 }
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(message)), ms)
-    promise.then((value) => { clearTimeout(timer); resolve(value) }, (error) => { clearTimeout(timer); reject(error) })
-  })
-}
 export async function analyze(text: string, mode: InferenceModeName, onProgress?: (progress: number) => void) {
   if (mode !== 'ONLY_ON_DEVICE' && !appCheckReady) throw new Error('Cloud-capable inference is disabled until Firebase App Check is configured.')
   const model = modelFor(mode)
   const start = performance.now()
   if (mode !== 'ONLY_IN_CLOUD') {
-    try { await withTimeout(prepareDeviceModel(mode, onProgress), mode === 'ONLY_ON_DEVICE' ? 120000 : 30000, 'The on-device model took too long to prepare.') }
+    try { await prepareDeviceModel(mode, onProgress) }
     catch (error) {
       if (mode === 'ONLY_ON_DEVICE') throw new Error('The on-device model could not be initialized. Your message was not sent.')
       console.warn('On-device initialization unavailable; Firebase hybrid mode will apply its configured fallback.', error)

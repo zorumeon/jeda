@@ -18,7 +18,7 @@ Pause before you connect.
 Crypto scams often combine urgency, impersonated support, free-token claims, and wallet approvals. People need a quick, understandable way to inspect suspicious text without being asked to connect a wallet or share a recovery phrase.
 
 ## What it does
-Jeda checks pasted crypto-related messages and wallet requests for common risk signals. It shows a structured risk level (low to critical), the signals it found mapped to six scam categories, and one practical next step. A local preflight blocks private-key-like and recovery-phrase-like text before inference. The app shows its routing choice and the inference source that the Firebase SDK reports for each response. Privacy mode fails closed to on-device only. Optional per-user history stores only metadata, and saving the message text is off by default.
+Jeda checks pasted crypto-related messages and wallet requests for common risk signals. It shows a structured risk level (low to critical), the signals it found mapped to six scam categories, and one practical next step. A local preflight blocks private-key-like and recovery-phrase-like text before inference. The app shows its routing choice and the inference source that the Firebase SDK reports for each response. Privacy mode fails closed to on-device only. A hybrid console, "Where your checks ran", counts the checks in the current tab that ran on-device, ran in the cloud, or were stopped by the secret guard, and marks the path of the latest one. Optional per-user history stores only metadata, and saving the message text is off by default.
 
 ## How we use Firebase AI Logic
 All facts below are taken from `src/firebase.ts`, `src/policy.ts`, and `src/main.ts`.
@@ -40,6 +40,7 @@ The interface is a responsive Vite + TypeScript app without a UI framework. Fire
 ## Built during the submission period
 All work in this repository was done during the submission period, starting 11 November 2026:
 - The Vite + TypeScript web app: message checker, example chips, result panel, History, How it works, Evaluation, onboarding, and dark mode.
+- The glass interface (`src/theme-glass.css`), the hybrid console that counts where checks ran, and the four-step "Quick tour for judges".
 - Firebase integration: AI Logic hybrid inference with structured output, App Check, Remote Config, Anonymous Auth, Firestore history, and security rules.
 - The local secret guard and routing policy, with unit tests (`src/secret-guard.test.ts`, `src/policy.test.ts`).
 - The 40-case synthetic evaluation set, the in-browser evaluation harness, and the `record-evaluation.mjs` script.
@@ -60,11 +61,17 @@ Record and publish a real evaluation run, expand the reviewed synthetic corpus, 
 No login, wallet, or real data is needed. Every example in the app is synthetic.
 
 1. **Open the hosted site:** [TO ADD: hosted site URL]. Use desktop Chrome.
-2. **Check an example.** Under "Try an example", click the **Claim your airdrop** chip, then click **Check this message**. The result shows a risk level, the signals found, one safe next step, and where the model ran.
-3. **Try Privacy mode and the secret guard.** Turn on **Privacy mode** (on-device only) and paste this synthetic seed phrase: `apple river stone cloud maple tiger lemon ocean pencil garden window silver`. Jeda blocks the check before any model runs and shows a warning with a **Redact and continue** button.
-4. **Open Evaluation and History.** Evaluation lists the 40 synthetic test cases and stays empty until a real run is recorded. History is anonymous and metadata-only by default.
+2. **Use "Quick tour for judges"** above the checker. Its four buttons set up each step below; nothing is sent to a model until you click **Check this message**.
+3. **01 Scam verdict.** Loads the synthetic "Claim your airdrop" message. Click **Check this message**. The result shows a risk level, the signals found, one safe next step, and where the model ran.
+4. **02 Secret guard.** Turns on **Privacy mode** (on-device only) and pastes this synthetic seed phrase: `apple river stone cloud maple tiger lemon ocean pencil garden window silver`. Jeda blocks the check before any model runs and shows a warning with a **Redact and continue** button.
+5. **03 Second opinion.** Loads the synthetic "Routine approval" message. Click **Check this message**. If the on-device result is low-confidence, Jeda offers a cloud second opinion that runs only after you confirm.
+6. **04 Evaluation.** Opens the Evaluation page, which lists the 40 synthetic test cases and stays empty until a real run is recorded. History is anonymous and metadata-only by default.
+7. **Read the hybrid console.** "Where your checks ran", below the checker, shows how many checks in this tab ran on-device, ran in the cloud, or were stopped by the secret guard. The counts start at zero and are not stored.
 
-On-device inference needs desktop Chrome with the local model downloaded. Without it, standard mode (`PREFER_ON_DEVICE`) lets the Firebase SDK use the cloud model under its hybrid inference policy, while Privacy mode (`ONLY_ON_DEVICE`) never falls back on its own. Either way, the badge under each result ("Ran on-device" or "Ran in cloud") comes from the SDK's `response.inferenceSource`, so it always shows where the result was actually produced.
+On-device inference needs desktop Chrome with the local model downloaded. Without it, standard mode (`PREFER_ON_DEVICE`) lets the Firebase SDK use the cloud model under its hybrid inference policy, while Privacy mode (`ONLY_ON_DEVICE`) never falls back on its own. Either way, the badge under each result ("Ran on-device" or "Ran in cloud") and the hybrid console counts come from the SDK's `response.inferenceSource`, so they always show where the result was actually produced.
+
+## Gallery images
+Use the files in `devpost-assets/`: the cover `jeda-hero-1200x630.png`, then screenshots 01 (desktop), 02 (mobile), 03 (dark mode), 04 (secret guard), and 05 (hybrid console). They were captured without Firebase keys, so none shows a model result. [TO ADD: a screenshot of a real assessment from the configured project.]
 
 ## Links
 - Demo video (public on YouTube): [TO ADD]

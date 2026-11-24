@@ -1,9 +1,17 @@
 import { analyze, appCheckReady, CLOUD_MODEL, clearHistory, configured, firebaseConfigReady, getPolicy, initializeOnDevice, loadHistory, saveHistory, type Verdict } from './firebase'
 import { findSecrets, redactSecrets } from './secret-guard'
-import { examples } from './examples'
+import { examples, judgeSeedPhrase } from './examples'
 import { DEFAULTS, isLowConfidence, routeInput, type Risk } from './policy'
+import { mountMotionDashboard } from './motion-dashboard'
 import committedEvaluationResults from '../evaluation-results.json'
+import '@fontsource-variable/geist'
+import '@fontsource-variable/geist-mono'
+import '@fontsource/instrument-serif/400.css'
+import '@fontsource/instrument-serif/400-italic.css'
 import './style.css'
+import './theme-glass.css'
+import './theme-elegant.css'
+import './motion-dashboard.css'
 
 type Result = { verdict: Verdict; source: string; latencyMs: number; reason: string }
 type EvaluationOutput = { id: string; category: string; mode: 'PREFER_ON_DEVICE' | 'ONLY_IN_CLOUD'; stage: 'preferred' | 'cloud-only' | 'second-opinion'; path: string; expected: 'scam' | 'benign'; actual?: 'scam' | 'benign'; latencyMs?: number; uncertainty?: number; lowConfidence?: boolean; error?: string }
@@ -26,9 +34,19 @@ let cloudFallbackAvailable = false
 let evaluationHistory = Array.isArray(committedEvaluationResults) ? committedEvaluationResults as EvaluationReport[] : []
 let evaluationReport: EvaluationReport | null = evaluationHistory.length ? evaluationHistory[evaluationHistory.length - 1] : null
 let onboardingDismissed = (()=>{try{return sessionStorage.getItem('jeda.onboarding.dismissed')==='1'}catch{return false}})()
-let demoStep = 0
-const HERO_INTRO_MS = 2200
-let heroIntroStart: number | null = null
+type TourStep = 'scam' | 'guard' | 'second' | 'eval'
+type RunPath = 'on-device' | 'cloud' | 'guard'
+let tourStep: TourStep | null = null
+// Hybrid console counters. They describe this tab only: they start at zero and are never stored or sent anywhere.
+const runs: Record<RunPath, number> = { 'on-device': 0, cloud: 0, guard: 0 }
+let lastPath: RunPath | null = null
+let guardActive = false
+// Counts one secret-guard block each time the input changes from clear to blocked.
+function syncGuard() {
+  const blocked = findSecrets(input).length > 0
+  if (blocked && !guardActive) { runs.guard++; lastPath = 'guard' }
+  guardActive = blocked
+}
 let animateResult = false
 
 function esc(value: unknown) { return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!) }
@@ -88,7 +106,7 @@ let pendingFocus: FocusTarget | null = null
 function captureFocus(): FocusTarget | null {
   const el = document.activeElement
   if (!(el instanceof HTMLElement) || !app.contains(el)) return pendingFocus
-  const attr = el.id ? null : ['data-example', 'data-page', 'data-jump'].find(a => el.hasAttribute(a))
+  const attr = el.id ? null : ['data-example', 'data-page', 'data-jump', 'data-tour'].find(a => el.hasAttribute(a))
   const selector = el.id ? `#${CSS.escape(el.id)}` : attr ? `[${attr}="${CSS.escape(el.getAttribute(attr)!)}"]` : ''
   if (!selector) return null
   const selection = el instanceof HTMLTextAreaElement ? [el.selectionStart, el.selectionEnd] as [number, number] : undefined
@@ -113,7 +131,7 @@ function render() {
   app.innerHTML = `
     <a class="skip-link" href="#main-content"${inert}>Skip to content</a>
     <header class="topbar"${inert}><div class="container topbar-inner">
-      <a class="brand" href="#" data-page="scan" aria-label="Jeda home"><span class="logo-mark">${icon('pause')}</span>jeda</a>
+      <a class="brand" href="#" data-page="scan" aria-label="Jeda home"><span class="logo-mark" aria-hidden="true"><i></i><i></i></span>jeda</a>
       <nav class="topnav" aria-label="Main navigation">${navLinks}<button class="nav-link" data-jump="trust">Is it safe?</button></nav>
       <div class="top-actions">
         <span class="conn-pill" title="${configured ? 'Firebase and App Check are configured' : 'Firebase is not configured in this workspace'}"><span class="status-dot ${configured ? 'online' : ''}"></span>${configured ? 'Firebase connected' : 'Demo workspace'}</span>
@@ -126,6 +144,8 @@ function render() {
     <main id="main-content" tabindex="-1"${inert}>${page === 'scan' ? renderScan() : page === 'history' ? renderHistory() : page === 'diagnostics' ? renderDiagnostics() : renderEvaluation()}</main>
     ${renderFooter(inert)}
     ${modalOpen ? renderOnboarding() : ''}`
+  const motionSlot = app.querySelector<HTMLElement>('#motion-slot')
+  if (motionSlot) mountMotionDashboard(motionSlot)
   bind()
   if (modalOpen && !focusTarget?.selector.includes('onboarding')) restoreFocus({ selector: '#close-onboarding-cta', occurrence: 0 })
   else restoreFocus(focusTarget)
@@ -133,54 +153,25 @@ function render() {
 function renderFooter(inert = '') {
   return `<footer class="site-footer"${inert}><div class="container">
     <div class="footer-top">
-      <div class="footer-brand"><a class="brand" href="#" data-page="scan"><span class="logo-mark">${icon('pause')}</span>jeda</a><p>A privacy-first pause button for crypto messages and wallet approvals. Heuristic guidance, not a guarantee. Not financial advice.</p></div>
+      <div class="footer-brand"><a class="brand" href="#" data-page="scan"><span class="logo-mark" aria-hidden="true"><i></i><i></i></span>jeda</a><p class="footer-tagline">Take a beat <em>before</em> you connect.</p><p>A privacy-first pause button for crypto messages and wallet approvals. Heuristic guidance, not a guarantee. Not financial advice.</p></div>
       <div class="footer-col"><h3>Product</h3><button data-jump="check">Check a message</button><button data-jump="types">Scam types</button><button data-page="history">History</button></div>
       <div class="footer-col"><h3>Transparency</h3><button data-page="diagnostics">How it works</button><button data-page="evaluation">Evaluation</button><button data-jump="trust">Is it safe?</button></div>
       <div class="footer-col"><h3>Built on</h3><span>Firebase AI Logic</span><span>Gemini Nano on-device</span><span>Chrome Prompt API</span></div>
     </div>
-    <div class="footer-bottom"><span>Always verify through official channels.</span><span>Never share your recovery phrase.</span></div>
+    <div class="footer-bottom"><span>&copy; 2026 Jeda &middot; #BuildHybridAI</span><span>Always verify through official channels.</span><span>Never share your recovery phrase.</span></div>
     <div class="footer-wordmark" aria-hidden="true">jeda</div>
   </div></footer>`
 }
-function heroIntroState() {
-  if (!onboardingDismissed) return { className: '', style: '' }
-  heroIntroStart ??= performance.now()
-  const elapsed = Math.round(performance.now() - heroIntroStart)
-  return elapsed < HERO_INTRO_MS ? { className: 'intro', style: ` style="--intro-offset:-${elapsed}ms"` } : { className: '', style: '' }
-}
 function renderHero() {
-  const intro = heroIntroState()
   return `<section class="hero"><div class="hero-grid-bg" aria-hidden="true"></div><div class="container hero-inner">
-    <button class="announce" data-page="evaluation"><span class="badge-new">NEW</span><span class="announce-long">40 synthetic test cases included</span><span class="announce-short">40 test cases included</span><span class="announce-link">Open evaluation</span><span class="announce-arrow">${icon('arrow')}</span></button>
-    <h1>Take a beat<br>before you connect.</h1>
+    <button class="announce" data-jump="tour"><span class="badge-new">#BuildHybridAI 2026</span><span class="announce-long">Built on Firebase AI Logic hybrid inference</span><span class="announce-short">Hybrid inference</span><span class="announce-link">Judge tour</span><span class="announce-arrow">${icon('arrow')}</span></button>
+    <h1>Take a beat <em>before</em><br>you connect.</h1>
     <p class="hero-lead">Scam messages work by rushing you. Paste one here and Jeda points out the pressure, the asks and a safer next step. It checks on your own device first.</p>
     <div class="hero-actions">${arrowCta('Check a message', 'data-jump="check"')}<button class="btn-blue" data-jump="how">See how it works</button></div>
-    <div class="hero-visual">
-      <figure class="specimen" aria-label="Example of a suspicious message">
-        <div class="specimen-head"><span class="specimen-from"><span class="avatar" aria-hidden="true">W</span><span><strong>Wallet Rewards</strong><small>Direct message · just now</small></span></span><span class="risk-chip risk-high"><span class="risk-dot"></span>High risk</span></div>
-        <p class="specimen-text ${intro.className}"${intro.style}>FINAL NOTICE: You have <mark class="m1">12 minutes</mark> to claim your unclaimed token allocation. <mark class="m2">Connect your wallet and approve</mark> the verification transaction.</p>
-        <div class="specimen-checks"><span class="specimen-checks-title">Before any model runs</span><ul><li>${icon('lock')}<span>Recovery phrase or private key</span><strong>None found</strong></li><li>${icon('unlock')}<span>Wallet connection by Jeda</span><strong>Never</strong></li><li>${icon('arrow')}<span>Links in the message</span><strong>Not opened</strong></li></ul></div>
-        <figcaption class="specimen-foot"><span>${icon('scan')} Incoming message</span><span>Synthetic example</span></figcaption>
-      </figure>
-      ${renderHeroAssessment()}
-    </div>
+    <ul class="mode-chips" aria-label="Firebase AI Logic inference modes used by Jeda"><li>${icon('cpu')}<code>PREFER_ON_DEVICE</code>default</li><li>${icon('lock')}<code>ONLY_ON_DEVICE</code>Privacy mode</li><li>${icon('cloud')}<code>ONLY_IN_CLOUD</code>long input or consent</li></ul>
+    <div class="motion-slot" id="motion-slot"></div>
   </div>
   <div class="hero-strip"><div class="container strip-inner"><span>Built with the tools behind private, on-device AI</span><strong>Firebase AI Logic</strong><strong>Gemini Nano</strong><strong>Chrome Prompt API</strong><strong>App Check</strong></div></div></section>`
-}
-function renderHeroAssessment() {
-  const level = riskOrder.indexOf('high')
-  const signals = [
-    { category: 'urgency_pressure', text: 'A 12-minute countdown pushes you to act before you can check.' },
-    { category: 'fake_airdrop', text: 'Claiming free tokens requires connecting a wallet and approving a transaction.' },
-  ]
-  return `<figure class="result-panel risk-high hero-result" aria-label="Example assessment for the synthetic message">
-    <div class="result-top"><div><span class="eyebrow">EXAMPLE ASSESSMENT</span><p class="hero-result-title">Safety assessment</p></div><div class="risk-chip risk-high"><span class="risk-dot"></span>High risk</div></div>
-    <div class="risk-meter" role="img" aria-label="Risk level: high, 3 of 4"><div class="meter-bars">${riskOrder.map((r, i) => `<span class="${level >= i ? 'filled' : ''}"><small>${riskName(r)}</small></span>`).join('')}</div></div>
-    <div class="flags-title">Signals to review <span class="count">${signals.length}</span></div>
-    <div class="flag-list">${signals.map(s => `<div class="flag-item"><span class="flag-icon">${icon(scamTypes.find(t => t.id === s.category)?.icon ?? 'alert')}</span><div><span class="category-pill">${categoryNames[s.category]}</span><p>${s.text}</p></div></div>`).join('')}</div>
-    <div class="recommendation"><span class="recommend-icon">${icon('shield')}</span><div><span>SAFE NEXT STEP</span><p>Do not connect your wallet. Look up the project&apos;s official site yourself to confirm any airdrop.</p></div></div>
-    <figcaption class="hero-result-foot">Illustrative layout for a synthetic message, not a recorded model run.</figcaption>
-  </figure>`
 }
 function renderStats() {
   const stats = [['0', 'wallet connections, ever'], ['6', 'scam categories explained'], [currentPolicy.maxOnDeviceChars.toLocaleString(), 'max characters for on-device checks'], ['40', 'synthetic evaluation cases']]
@@ -221,10 +212,10 @@ function renderScan() {
   const flagged = findSecrets(input)
   const selectedExample = examples.findIndex(example => example.text === input)
   const route = getEffectiveRoute(input.length, privacyOnly)
-  const demoLabel = demoStep === 0 ? 'Play demo' : demoStep === 1 ? 'Next: ambiguous case' : demoStep === 2 ? 'Next: evaluation' : 'Restart demo'
   const showEscalation = result && isLowConfidence(result.verdict, currentPolicy.lowConfidenceThreshold) && result.source === 'on-device' && currentPolicy.escalationEnabled && appCheckReady
   return `${renderHero()}${renderStats()}<section class="section" id="check"><div class="container">
-    <div class="section-head split"><div><span class="eyebrow">STEP 01 · ANALYZE</span><h2>Check a message</h2><p class="lead">Paste it below. It is checked on your device when Chrome&apos;s local model is available. Privacy mode never uses the cloud without your confirmation.</p></div><button class="btn-soft" id="demo">${icon('play')}<span>${demoLabel}</span></button></div>
+    <div class="section-head"><span class="eyebrow">STEP 01 · ANALYZE</span><h2>Check a message</h2><p class="lead">Paste it below. It is checked on your device when Chrome&apos;s local model is available. Privacy mode never uses the cloud without your confirmation.</p></div>
+    ${renderTour()}
     ${!configured ? `<div class="notice notice-info"><span class="notice-icon">${icon('alert')}</span><div><strong>Firebase setup incomplete</strong><p>Complete the web-app configuration and App Check to enable cloud inference and private history. Local inference also needs Firebase configuration and a supported browser.</p></div><button class="text-link" data-page="diagnostics">Setup guide</button></div>` : ''}
     <div class="check-grid">
       <section class="panel input-panel" aria-labelledby="input-title">
@@ -247,8 +238,33 @@ function renderScan() {
         ${showEscalation ? `<div class="escalation"><div><strong>Want a second opinion?</strong><p>This result has limited evidence. A cloud model can review the same message. The text leaves this device only if you approve.</p></div><button class="btn-small" id="escalate">Get a second opinion ${icon('arrow')}</button></div>` : ''}
       </aside>
     </div>
+    ${renderConsole()}
     ${previousResult ? `<section class="panel comparison"><span class="eyebrow">SIDE-BY-SIDE OPINION</span><h3>Local and cloud assessment</h3><div class="compare-grid">${resultCard(previousResult)}${resultCard(result!)}</div></section>` : ''}
   </div></section>${renderSections()}`
+}
+const tourSteps: { id: TourStep; title: string; text: string }[] = [
+  { id: 'scam', title: 'Scam verdict', text: 'Loads a synthetic airdrop DM. Press Check to see the risk level and where it ran.' },
+  { id: 'guard', title: 'Secret guard', text: 'Turns on Privacy mode and pastes a synthetic seed phrase. It is blocked before any model runs.' },
+  { id: 'second', title: 'Second opinion', text: 'Loads an ambiguous approval. A low-confidence local result offers a consented cloud review.' },
+  { id: 'eval', title: 'Evaluation', text: 'Opens the 40-case synthetic benchmark. It stays empty until a real run is recorded.' },
+]
+function renderTour() {
+  return `<section class="tour" id="tour" aria-labelledby="tour-title">
+    <div class="tour-head"><h3 id="tour-title">Quick tour for judges</h3><p>Four steps, synthetic data only. Nothing is sent until you press Check.</p></div>
+    <div class="tour-grid">${tourSteps.map((step, i) => `<button class="tour-step ${tourStep === step.id ? 'active' : ''}" data-tour="${step.id}" aria-pressed="${tourStep === step.id}"><span class="tour-no" aria-hidden="true">0${i + 1}</span><strong>${step.title}</strong><small>${step.text}</small></button>`).join('')}</div>
+  </section>`
+}
+function renderConsole() {
+  const lanes: { id: RunPath; icon: string; name: string; detail: string }[] = [
+    { id: 'on-device', icon: 'cpu', name: 'On-device', detail: 'Gemini Nano through the Chrome Prompt API' },
+    { id: 'cloud', icon: 'cloud', name: 'Cloud', detail: `${CLOUD_MODEL} through Firebase AI Logic` },
+    { id: 'guard', icon: 'lock', name: 'Stopped by secret guard', detail: 'Blocked locally, no model called' },
+  ]
+  return `<section class="console" aria-labelledby="console-title">
+    <div class="console-head"><div><span class="eyebrow">HYBRID CONSOLE</span><h3 id="console-title">Where your checks ran</h3></div><span class="console-scope">This tab only · starts at zero · not stored</span></div>
+    <ul class="lanes">${lanes.map(lane => `<li class="lane ${lastPath === lane.id ? 'last' : ''}"><span class="lane-top">${icon(lane.icon)}${lane.name}</span><span class="lane-count" aria-label="${runs[lane.id]} ${runs[lane.id] === 1 ? 'check' : 'checks'}">${String(runs[lane.id]).padStart(2, '0')}</span><small>${esc(lane.detail)}</small>${lastPath === lane.id ? '<span class="lane-here">Ran here</span>' : ''}</li>`).join('')}</ul>
+    <p class="console-note">On-device and cloud counts come from the Firebase SDK&apos;s <code>response.inferenceSource</code> for each completed check, not from the mode that was requested.</p>
+  </section>`
 }
 function renderResult(item: Result) {
   const level = riskOrder.indexOf(item.verdict.risk)
@@ -322,7 +338,7 @@ function chromeSetupStatus() {
 function dismissOnboarding() { onboardingDismissed = true; try { sessionStorage.setItem('jeda.onboarding.dismissed', '1') } catch { }; render(); pendingFocus = null; document.getElementById('main-content')?.focus({ preventScroll: true }) }
 function renderOnboarding() {
   return `<div class="modal-backdrop" role="presentation"><section class="onboarding" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-    <div class="onboarding-art"><span class="onboarding-mark">${icon('pause')}</span><button class="icon-button modal-close" id="close-onboarding" aria-label="Close introduction">${icon('close')}</button></div>
+    <div class="onboarding-art"><span class="onboarding-mark" aria-hidden="true"><i></i><i></i></span><button class="icon-button modal-close" id="close-onboarding" aria-label="Close introduction">${icon('close')}</button></div>
     <div class="onboarding-body"><span class="eyebrow">WELCOME TO JEDA</span><h2 id="welcome-title">A little more certainty before you connect.</h2><p>Check suspicious crypto messages with a privacy-first assistant built to help you pause, spot red flags, and choose a safer next step.</p>
     <ol class="onboarding-steps"><li><span>01</span><div><strong>Paste, never connect</strong><p>This tool only reads text. It never connects to your wallet.</p></div></li><li><span>02</span><div><strong>Check your browser</strong><p><strong>${esc(chromeSetupStatus())}</strong><br>Enable chrome://flags/#prompt-api-for-gemini-nano-multimodal-input and restart for on-device analysis.</p></div></li><li><span>03</span><div><strong>Choose what leaves your device</strong><p>If the local model is unavailable, standard mode falls back to Firebase AI Logic in the cloud; long inputs and a second opinion use it too. Turn on Privacy mode to keep checks on-device. Every result shows where it ran.</p></div></li></ol>
     <button class="btn-primary full" id="close-onboarding-cta">Start checking messages ${icon('arrow')}</button><div class="onboarding-foot">${icon('lock')} Never share a recovery phrase with anyone, not even this tool.</div></div></section></div>`
@@ -330,26 +346,46 @@ function renderOnboarding() {
 function bind() {
   document.querySelectorAll<HTMLElement>('[data-page]').forEach(el=>el.addEventListener('click',(e)=>{e.preventDefault();menuOpen=false;window.scrollTo({top:0});page=el.dataset.page as typeof page;if(page==='history') void refreshHistory();render();pendingFocus=null;document.getElementById('main-content')?.focus({preventScroll:true})}))
   document.querySelectorAll<HTMLElement>('[data-jump]').forEach(el=>el.addEventListener('click',()=>{const id=el.dataset.jump!;if(page!=='scan'||menuOpen){page='scan';menuOpen=false;render()}const target=document.getElementById(id);target?.scrollIntoView({behavior:'smooth',block:'start'});if(id==='check')window.setTimeout(()=>document.querySelector<HTMLTextAreaElement>('#message-input')?.focus({preventScroll:true}),450);else if(target){target.setAttribute('tabindex','-1');target.focus({preventScroll:true})}}))
-  document.querySelector('#theme-toggle')?.addEventListener('click',()=>{dark=!dark;render()})
-  document.querySelector<HTMLTextAreaElement>('#message-input')?.addEventListener('input',e=>{input=(e.target as HTMLTextAreaElement).value;const count=document.querySelector('#char-count');if(count)count.textContent=`${input.length} / 6000`;const button=document.querySelector<HTMLButtonElement>('#analyze');if(button)button.disabled=input.trim().length<10||findSecrets(input).length>0||busy;if(findSecrets(input).length)render()})
-  document.querySelectorAll<HTMLElement>('[data-example]').forEach(el=>el.addEventListener('click',()=>{const i=Number(el.dataset.example);if(Number.isInteger(i)&&examples[i]){input=examples[i].text;result=null;previousResult=null;errorMessage=''}render();document.querySelector<HTMLTextAreaElement>('#message-input')?.focus({preventScroll:true})}))
+  document.querySelector('#theme-toggle')?.addEventListener('click',(e)=>{
+    const rect=(e.currentTarget as HTMLElement).getBoundingClientRect()
+    const x=rect.left+rect.width/2,y=rect.top+rect.height/2
+    const root=document.documentElement
+    root.style.setProperty('--ink-x',`${x}px`)
+    root.style.setProperty('--ink-y',`${y}px`)
+    root.style.setProperty('--ink-r',`${Math.ceil(Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y)))}px`)
+    const flip=()=>{dark=!dark;render()}
+    const transition=(document as Document&{startViewTransition?:(callback:()=>void)=>unknown}).startViewTransition
+    if(transition&&!matchMedia('(prefers-reduced-motion: reduce)').matches)transition.call(document,flip);else flip()
+  })
+  document.querySelectorAll<HTMLElement>('[data-tour]').forEach(el=>el.addEventListener('click',()=>{
+    tourStep=el.dataset.tour as TourStep
+    result=null;previousResult=null;errorMessage=''
+    if(tourStep==='eval'){page='evaluation';window.scrollTo({top:0});render();pendingFocus=null;document.getElementById('main-content')?.focus({preventScroll:true});toast('Tour 4 of 4: the synthetic evaluation report.');return}
+    if(tourStep==='scam'){privacyOnly=false;input=examples[0].text;toast('Tour 1 of 4: press Check this message.')}
+    else if(tourStep==='guard'){privacyOnly=true;input=judgeSeedPhrase;toast('Tour 2 of 4: blocked before any model ran.')}
+    else{privacyOnly=false;input=examples[6].text;toast('Tour 3 of 4: press Check, then look for the second-opinion offer.')}
+    syncGuard();render()
+    document.querySelector('.input-panel')?.scrollIntoView({behavior:'smooth',block:'start'})
+    document.querySelector<HTMLTextAreaElement>('#message-input')?.focus({preventScroll:true})
+  }))
+  document.querySelector<HTMLTextAreaElement>('#message-input')?.addEventListener('input',e=>{input=(e.target as HTMLTextAreaElement).value;const wasBlocked=guardActive;syncGuard();if(wasBlocked&&!guardActive){render();return}const count=document.querySelector('#char-count');if(count)count.textContent=`${input.length} / 6000`;const button=document.querySelector<HTMLButtonElement>('#analyze');if(button)button.disabled=input.trim().length<10||findSecrets(input).length>0||busy;if(findSecrets(input).length)render()})
+  document.querySelectorAll<HTMLElement>('[data-example]').forEach(el=>el.addEventListener('click',()=>{const i=Number(el.dataset.example);if(Number.isInteger(i)&&examples[i]){input=examples[i].text;result=null;previousResult=null;errorMessage='';tourStep=null;syncGuard()}render();document.querySelector<HTMLTextAreaElement>('#message-input')?.focus({preventScroll:true})}))
   document.querySelector('#menu-toggle')?.addEventListener('click',()=>{menuOpen=!menuOpen;render()})
   document.querySelector<HTMLInputElement>('#privacy-toggle')?.addEventListener('change',e=>{privacyOnly=(e.target as HTMLInputElement).checked;render()})
   document.querySelector<HTMLInputElement>('#save-raw')?.addEventListener('change',e=>{saveRaw=(e.target as HTMLInputElement).checked})
-  document.querySelector('#redact-input')?.addEventListener('click',()=>{input=redactSecrets(input);render();document.querySelector<HTMLTextAreaElement>('#message-input')?.focus({preventScroll:true})})
+  document.querySelector('#redact-input')?.addEventListener('click',()=>{input=redactSecrets(input);syncGuard();render();document.querySelector<HTMLTextAreaElement>('#message-input')?.focus({preventScroll:true})})
   document.querySelector('#analyze')?.addEventListener('click',()=>void runAnalysis())
   document.querySelector('#escalate')?.addEventListener('click',()=>{if(confirm('Send this message to Firebase AI Logic for a cloud second opinion? The message leaves this device.')) void runAnalysis('ONLY_IN_CLOUD','User requested a cloud second opinion')})
   document.querySelector('#cloud-fallback')?.addEventListener('click',()=>{if(confirm('The message will be sent to Firebase AI Logic in the cloud. Continue?'))void runAnalysis('ONLY_IN_CLOUD','User approved cloud fallback')})
   document.querySelector('#copy-summary')?.addEventListener('click',()=>{if(result)void navigator.clipboard.writeText(`Jeda safe summary\nRisk: ${riskName(result.verdict.risk)}\n${result.verdict.summary}\nRecommended: ${result.verdict.recommendation}\nRan: ${result.source} (${result.latencyMs} ms)\nNo message text included. Heuristic guidance, not a guarantee.`).then(()=>toast('Safe summary copied'))})
   document.querySelector('#clear-history')?.addEventListener('click',()=>void doClearHistory())
-  document.querySelector('#demo')?.addEventListener('click',()=>{if(demoStep===0){input=examples[0].text;page='scan';demoStep=1;toast('Demo step 1: inspect a synthetic airdrop message.')}else if(demoStep===1){input=examples[6].text;page='scan';demoStep=2;toast('Demo step 2: review an ambiguous approval request.')}else if(demoStep===2){page='evaluation';demoStep=3;toast('Demo step 3: open the evaluation page.')}else{page='scan';demoStep=0;input=''}result=null;previousResult=null;render()})
   document.querySelector('#run-eval')?.addEventListener('click',()=>void runEvaluation())
   document.querySelector('#download-eval')?.addEventListener('click',downloadEvaluation)
   for(const id of ['close-onboarding','close-onboarding-cta'])document.querySelector(`#${id}`)?.addEventListener('click',dismissOnboarding)
 }
 function toast(message:string){const el=document.createElement('div');el.className='toast';el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),2400)}
 async function runAnalysis(forcedMode?: 'ONLY_IN_CLOUD', overrideReason?: string) {
-  const secrets=findSecrets(input);if(secrets.length){input=redactSecrets(input,secrets);errorMessage='A possible recovery phrase or private key was detected. It was redacted and not sent or stored.';render();return}
+  const secrets=findSecrets(input);if(secrets.length){syncGuard();input=redactSecrets(input,secrets);syncGuard();errorMessage='A possible recovery phrase or private key was detected. It was redacted and not sent or stored.';render();return}
   const selected=getEffectiveRoute(input.length,privacyOnly)
   const mode=forcedMode??selected.mode
   const reason=overrideReason??(mode==='ONLY_IN_CLOUD'?selected.reason:mode==='ONLY_ON_DEVICE'?selected.reason:'Device preferred by Firebase hybrid inference')
@@ -367,6 +403,7 @@ async function runAnalysis(forcedMode?: 'ONLY_IN_CLOUD', overrideReason?: string
     const newResult={...analyzed,reason:analyzed.source==='cloud'&&mode==='PREFER_ON_DEVICE'?'Local model unavailable; SDK cloud fallback':reason}
     previousResult=forcedMode==='ONLY_IN_CLOUD'?result:null
     result=newResult
+    if(newResult.source==='on-device'||newResult.source==='cloud'){runs[newResult.source]++;lastPath=newResult.source}
     animateResult=true
     lifecycle=analyzed.source==='on-device'?'Ready':'Unavailable or cloud selected'
     try { await saveHistory({risk:result.verdict.risk,source:result.source,latencyMs:result.latencyMs,...(saveRaw?{raw:input}:{})}) } catch { /* History is non-blocking; the analysis remains available. */ }

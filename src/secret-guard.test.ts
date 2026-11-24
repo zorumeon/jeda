@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { findSecrets, redactSecrets } from './secret-guard'
-import { examples } from './examples'
+import { examples, judgeSeedPhrase } from './examples'
 import syntheticCases from '../public/eval/cases.json'
 
 // First 28 words of the BIP-39 English list. Only used as realistic-looking test input; none of these are real wallets.
@@ -90,6 +90,10 @@ describe('wordlist matching and false positives', () => {
   it.each(PROSE)('does not flag ordinary prose: %s', (text) => expect(findSecrets(text)).toHaveLength(0))
   it('does not flag any built-in example message', () => {
     for (const example of examples) expect(findSecrets(example.text), example.label).toHaveLength(0)
+  })
+  it('blocks the synthetic seed phrase used by the judge tour', () => {
+    expect(kinds(judgeSeedPhrase)).toEqual(['recovery phrase'])
+    expect(redactSecrets(judgeSeedPhrase)).not.toContain('apple')
   })
   it('does not flag any message in the synthetic evaluation corpus', () => {
     for (const item of syntheticCases) expect(findSecrets(item.text), item.id).toHaveLength(0)
