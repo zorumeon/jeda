@@ -264,7 +264,7 @@ function renderScan() {
         ${errorMessage ? `<div class="error-box" role="alert"><span class="notice-icon">${icon('alert')}</span><div><p>${esc(errorMessage)}</p>${cloudFallbackAvailable ? '<button id="cloud-fallback" class="btn-small">Ask before sending to cloud</button>' : ''}</div></div>` : ''}
       </section>
       <aside class="check-side" aria-label="Assessment">
-        ${busy ? renderChecking() : result ? renderResult(result, Boolean(showEscalation)) : `<section class="empty-result"><span class="empty-icon">${icon('shield')}</span><strong>Your assessment will appear here</strong><p>Start with a message on the left. Your input is checked for sensitive secrets before any model runs.</p><ul class="empty-list"><li>${icon('check')} Risk level from low to critical</li><li>${icon('check')} Each red flag explained</li><li>${icon('check')} One safe next step</li></ul></section>`}
+        ${busy ? renderChecking() : result ? renderResult(result, Boolean(showEscalation)) : `<section class="empty-result"><span class="eyebrow">STEP 2 · RESULT</span><span class="empty-icon">${icon('shield')}</span><strong>Your assessment will appear here</strong><p>Start with a message on the left. Your input is checked for sensitive secrets before any model runs.</p><ul class="empty-list"><li>${icon('check')} Risk level from low to critical</li><li>${icon('check')} Each red flag explained</li><li>${icon('check')} One safe next step</li></ul></section>`}
       </aside>
     </div>
     ${renderConsole()}
